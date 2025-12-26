@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biometric Login - VoiceAccess</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Sora:wght@100..800&display=swap"
+        rel="stylesheet">
+    <link href="css/all.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/slicknav.min.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <style>
+        /* --- YOUR ORIGINAL STYLES (UNCHANGED) --- */
+        .voice-login-section {
+            padding: 80px 0;
+            overflow: hidden;
+        }
+
+        .camera-wrapper {
+            position: relative;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            background: #000;
+            border: 5px solid #444;
+            /* Changed Green to Dark Gray */
+            height: 450px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video#webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        /* --- NEW "APPLE STYLE" POPUP (GRAY THEME) --- */
+        .agent-widget {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 360px;
+            background: rgba(30, 30, 30, 0.95);
+            /* Dark Gray Background */
+            backdrop-filter: blur(20px);
+            border: 1px solid #555;
+            /* Gray Border */
+            padding: 20px;
+            border-radius: 25px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 9999;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+            color: white;
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .agent-icon {
+            width: 50px;
+            height: 50px;
+            background: #444;
+            /* Dark Gray Icon */
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            border: 1px solid #666;
+        }
+
+        .agent-icon.speaking {
+            animation: pulse-gray 1s infinite;
+            border-color: #fff;
+        }
+
+        @keyframes pulse-gray {
+            0% {
+                transform: scale(1);
+                background: #444;
+            }
+
+            50% {
+                transform: scale(1.1);
+                background: #666;
+            }
+
+            100% {
+                transform: scale(1);
+                background: #444;
+            }
+        }
+
+        .agent-text h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .agent-text p {
+            margin: 0;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        /* --- GESTURE BOX (SLIDES UP) --- */
+        .gesture-box {
+            background: #000;
+            /* Pure Black for contrast */
+            border-radius: 15px;
+            padding: 15px;
+            display: none;
+            /* Hidden until needed */
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #444;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gesture-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .gesture-icon-display {
+            font-size: 24px;
+        }
+
+        /* --- APPLE PAY STYLE CHECKMARK --- */
+        .success-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            /* White Checkmark */
+            color: #000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            animation: popScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popScale {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Start Overlay */
+        .start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 5, 0.95);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="start-overlay" id="startOverlay">
+        <i class="fa-solid fa-face-viewfinder" style="font-size: 60px; color: #888; margin-bottom: 20px;"></i>
+        <h2 class="text-white">Tap to Login</h2>
+        <p style="color: #666;">Secure Hands-free Access</p>
+    </div>
+
+    <div class="voice-login-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp" style="color: #888;">Secure Access</h3>
+                        <h2 class="text-anime-style-2">Login with <span>Voice & Face</span></h2>
+                        <p class="wow fadeInUp" style="margin-top: 20px;">Look at the camera to login automatically.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="camera-wrapper wow fadeInRight" data-wow-delay="0.2s">
+                        <video id="webcam" autoplay playsinline muted></video>
+                    </div>
+                    <div class="text-center mt-3">
+                        <p id="cameraStatus" style="font-weight: bold; color: #888;">System Standby</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="agent-widget" id="agentWidget">
+        <div class="agent-header">
+            <div class="agent-icon" id="agentIcon"><i class="fa-solid fa-robot"></i></div>
+            <div class="agent-text">
+                <h5 id="agentTitle">Assistant</h5>
+                <p id="agentStatus">Initializing...</p>
+            </div>
+        </div>
+
+        <div class="gesture-box" id="gestureBox">
+            <div class="gesture-info">
+                <span class="gesture-icon-display" id="handIcon">✋</span>
+                <span id="handText">Show Thumbs Up</span>
+            </div>
+            <div class="success-circle" id="successCheck"><i class="fa-solid fa-check"></i></div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/function.js"></script>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const cameraStatus = document.getElementById('cameraStatus');
+        
+        // Popup Elements
+        const agentWidget = document.getElementById('agentWidget');
+        const agentIcon = document.getElementById('agentIcon');
+        const agentTitle = document.getElementById('agentTitle');
+        const agentStatus = document.getElementById('agentStatus');
+        
+        // Gesture Box Elements
+        const gestureBox = document.getElementById('gestureBox');
+        const handIcon = document.getElementById('handIcon');
+        const handText = document.getElementById('handText');
+        const successCheck = document.getElementById('successCheck');
+        
+        const startOverlay = document.getElementById('startOverlay');
+
+        let faceMatcher = null;
+        let isFaceScanning = true; // Switch between Face and Hand mode
+        let unknownCounter = 0;
+
+        // 1. START
+        startOverlay.addEventListener('click', async function() {
+            $(this).fadeOut();
+            $(agentWidget).fadeIn().css("display", "flex");
+            
+            updateAgent("Starting...", "Loading Database.");
+            speak("Starting system. Please look at the camera.");
+            
+            await initFaceSystem();
+        });
+
+        // 2. LOAD FACE SYSTEM
+        async function initFaceSystem() {
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
+                    faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
+                    faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
+                    faceapi.nets.ssdMobilenetv1.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')
+                ]);
+
+                const response = await fetch('api.php?action=fetch_faces');
+                const users = await response.json();
+
+                if(users.length > 0) {
+                    const labeledDescriptors = users.map(u => new faceapi.LabeledFaceDescriptors(u.fullname, [new Float32Array(u.face_descriptor)]));
+                    faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.45);
+                }
+
+                const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+                video.srcObject = stream;
+
+                updateAgent("Scanning", "Looking for you...");
+                speak("Scanning face.");
+                
+                startFaceLoop(users);
+
+            } catch(e) {
+                console.error(e);
+                updateAgent("Error", "System Failed.");
+            }
+        }
+
+        // 3. FACE SCAN LOOP
+        function startFaceLoop(allUsers) {
+            const interval = setInterval(async () => {
+                if(!isFaceScanning) { clearInterval(interval); return; }
+
+                const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                                               .withFaceLandmarks().withFaceDescriptor();
+
+                if (detection) {
+                    let match = { label: 'unknown' };
+                    if(faceMatcher) match = faceMatcher.findBestMatch(detection.descriptor);
+
+                    if (match.label !== 'unknown') {
+                        // --- SUCCESS LOGIN ---
+                        clearInterval(interval);
+                        const name = match.label;
+                        
+                        cameraStatus.innerText = "Verified: " + name;
+                        cameraStatus.style.color = "#fff";
+                        
+                        updateAgent("Access Granted", `Welcome, ${name}.`);
+                        speak(`Identity verified. Welcome back ${name}.`);
+
+                        setTimeout(() => window.location.href="home.html", 3000);
+                    } else {
+                        // --- UNKNOWN USER ---
+                        unknownCounter++;
+                        cameraStatus.innerText = "Unknown User";
+                        cameraStatus.style.color = "#888";
+                        
+                        // If unknown for 3 seconds, switch to Hand Registration
+                        if(unknownCounter > 6) {
+                            clearInterval(interval);
+                            switchToRegistrationMode();
+                        }
+                    }
+                }
+            }, 500);
+        }
+
+        // 4. SWITCH TO HAND MODE (Apple Pay Style)
+        function switchToRegistrationMode() {
+            isFaceScanning = false;
+            
+            // Change Assistant Text
+            updateAgent("User Not Found", "Register?");
+            speak("I don't know you. If you want to register, show me a thumbs up.");
+
+            // Slide Up the Gesture Box
+            gestureBox.style.display = "flex";
+            handText.innerText = "Show Thumbs Up to Register";
+            
+            // Start Hand Tracking
+            initHandTracking();
+        }
+
+        function initHandTracking() {
+            const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+            hands.setOptions({maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5});
+            hands.onResults(onHandResults);
+
+            const camera = new Camera(video, {
+                onFrame: async () => { await hands.send({image: video}); },
+                width: 1280, height: 720
+            });
+            camera.start();
+        }
+
+        function onHandResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                
+                // Thumb Logic
+                const isThumbUp = landmarks[4].y < landmarks[3].y;
+                // Count Fingers (to ensure it's a fist + thumb)
+                let fingersUp = 0;
+                if(landmarks[8].y < landmarks[6].y) fingersUp++;
+                
+                if (isThumbUp && fingersUp <= 1) {
+                    // --- THUMBS UP DETECTED! ---
+                    handIcon.innerText = "👍";
+                    triggerSuccessAnimation();
+                } else {
+                    handIcon.innerText = "✋"; // Hand seen but not thumbs up
+                }
+            } else {
+                handIcon.innerText = "❓"; // No hand
+            }
+        }
+
+        let isRedirecting = false;
+        function triggerSuccessAnimation() {
+            if(isRedirecting) return;
+            isRedirecting = true;
+
+            // 1. Text Change
+            handText.innerText = "Confirmed!";
+            handText.style.color = "#fff";
+
+            // 2. Apple Pay "POP" Animation
+            successCheck.style.display = "flex"; // The white checkmark appears
+            
+            // 3. Voice & Redirect
+            speak("Okay, redirecting to registration.");
+            
+            setTimeout(() => {
+                window.location.href = "register-voice.html";
+            }, 2000);
+        }
+
+        // Helpers
+        function updateAgent(title, text) {
+            document.getElementById('agentTitle').innerText = title;
+            document.getElementById('agentStatus').innerText = text;
+            agentIcon.classList.add('speaking');
+            setTimeout(() => agentIcon.classList.remove('speaking'), 1000);
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+
+</html>

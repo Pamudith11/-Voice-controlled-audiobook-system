@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	<meta name="description" content="">
+	<meta name="keywords" content="">
+	<meta name="author" content="">
+	<!-- Page Title -->
+    <title>IshiharaTest - VoiceAccess</title>
+	<!-- Favicon Icon -->
+	<link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+	<!-- Google Fonts Css-->
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&amp;family=Sora:wght@100..800&amp;display=swap" rel="stylesheet">
+	<!-- Bootstrap Css -->
+	<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+	<!-- SlickNav Css -->
+	<link href="css/slicknav.min.css" rel="stylesheet">
+	<!-- Swiper Css -->
+	<link rel="stylesheet" href="css/swiper-bundle.min.css">
+	<!-- Font Awesome Icon Css-->
+	<link href="css/all.min.css" rel="stylesheet" media="screen">
+	<!-- Animated Css -->
+	<link href="css/animate.css" rel="stylesheet">
+    <!-- Magnific Popup Core Css File -->
+	<link rel="stylesheet" href="css/magnific-popup.css">
+	<!-- Mouse Cursor Css File -->
+	<link rel="stylesheet" href="css/mousecursor.css">
+	<!-- Main Custom Css -->
+	<link href="css/custom.css" rel="stylesheet" media="screen">
+</head>
+<body>
+
+    <svg style="display: none">
+        <filter id="protanopia">
+          <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0"/>
+        </filter>
+      
+        <filter id="deuteranopia">
+          <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"/>
+        </filter>
+      </svg>
+      
+
+    <!-- Preloader Start -->
+	<div class="preloader">
+		<div class="loading-container">
+			<div class="loading"></div>
+			<div id="loading-icon"><img src="images/favicon.png" alt=""></div>
+		</div>
+	</div>
+	<!-- Preloader End -->
+
+    <!-- Our Appointment Section Start -->
+    <div class="our-appointment">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- Our Appointment Box Start -->
+                    <div class="our-appointment-box">
+                        <!-- Appointment Form Start -->
+                        <div class="appointment-form">
+                            <!-- Contact Us Form Start -->
+                            <form id="appointmentForm" action="#" method="POST" data-toggle="validator" class="wow fadeInUp">
+                                <div class="row">
+                                    <div class="form-group col-md-6 mb-4" style="margin-bottom: 20px;">
+                                        <small for="services" style="color: #3c444d; font-weight: bold; margin-bottom: 10px; display: inline-block;">Demonstration Plate</small>
+                                        <select name="services" class="form-control form-select" id="services" required>
+                                            <option value="" disabled selected>Select The Number</option>
+                                            <option value="12">12</option>
+                                            <option value="21">21</option>
+                                            <option value="Nothing">Nothing</option>
+                                          </select>
+                                          
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+
+                                    <div class="form-group col-md-6 mb-4">
+                                        <small for="time_slot" style="color: #3c444d; font-weight: bold; margin-bottom: 10px; display: inline-block;">Vanishing Plate - 1</small>
+                                        <select name="time_slot" class="form-control form-select" id="time_slot" required>
+                                            <option value="" disabled selected>Select The Number</option>
+                                            <option value="8">8</option>
+                                            <option value="3">3</option>
+                                            <option value="Nothing">Nothing</option>
+                                          </select>                                          
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+
+                                    <div class="form-group col-md-6 mb-4">
+                                        <small for="instructor" style="color: #3c444d; font-weight: bold; margin-bottom: 10px; display: inline-block;">Vanishing Plate</small>
+                                        <select name="instructor" class="form-control form-select" id="instructor" required>
+                                            <option value="" disabled selected>Select The Number</option>
+                                            <option value="5">5</option>
+                                            <option value="2">2</option>
+                                            <option value="Nothing">Nothing</option>
+                                          </select>                                          
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+
+                                    <div class="form-group col-md-6 mb-4">
+                                        <small for="session_type" style="color: #3c444d; font-weight: bold; margin-bottom: 10px; display: inline-block;">Hidden Digit Plate</small>
+                                        <select name="session_type" class="form-control form-select" id="session_type" required>
+                                            <option value="" disabled selected>Select The Number</option>
+                                            <option value="45">45</option>
+                                            <option value="Nothing">Nothing</option>
+                                          </select>                                          
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+
+                                    <div class="col-lg-12">
+                                        <div class="contact-form-btn">
+                                            <button type="submit" class="btn-default">submit</button>
+                                            <div id="msgSubmit" class="h3 hidden"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <!-- Contact Us Form End -->
+
+                            <style>
+                                .protanopia-filter {
+                                  filter: url(#protanopia);
+                                }
+                              
+                                .deuteranopia-filter {
+                                  filter: url(#deuteranopia);
+                                }
+                              
+                                .achromatopsia-filter {
+                                  filter: grayscale(1);
+                                }
+                              
+                                .redgreen-filter {
+                                  filter: contrast(0.9) saturate(0.5);
+                                }
+                              </style>
+                              
+
+                              <script>
+                                document.getElementById("appointmentForm").addEventListener("submit", function(e) {
+                                  e.preventDefault();
+                              
+                                  const p1 = document.getElementById("services").value;
+                                  const p2 = document.getElementById("time_slot").value;
+                                  const p3 = document.getElementById("instructor").value;
+                                  const p4 = document.getElementById("session_type").value;
+                              
+                                  if (p1 !== "12") {
+                                    alert("Test invalid – everyone should see 12 in the first plate.");
+                                    return;
+                                  }
+                              
+                                  let result = "";
+                              
+                                  const isProtanopia = p2 !== "8";
+                                  const isDeuteranopia = p3 !== "5";
+                                  const isHidden45 = p4 === "45";
+                              
+                                  if (!isProtanopia && !isDeuteranopia && !isHidden45) {
+                                    result = "normal";
+                                  } else if (isProtanopia && isDeuteranopia) {
+                                    result = "achromatopsia";
+                                  } else if (isProtanopia) {
+                                    result = "protanopia";
+                                  } else if (isDeuteranopia) {
+                                    result = "deuteranopia";
+                                  } else if (isHidden45) {
+                                    result = "redgreen";
+                                  }
+                              
+                                  // Save the result so we can apply it on the next page
+                                  localStorage.setItem("visionType", result);
+                              
+                                  // Redirect to login page
+                                  window.location.href = "login.html"; // Change this to your login page URL
+                                });
+                              </script>
+                              
+                              
+                        </div>
+                        <!-- Appointment Form Start -->
+
+                        <!-- Our Appointment Content Start -->
+                        <div class="our-appointment-content">
+                            <!-- Section Title Start -->
+                            <div class="section-title">
+                                <h3 class="wow fadeInUp">option that fits you:</h3>
+                                <h2 class="text-anime-style-2" data-cursor="-opaque">Adjusting for  <span>Color Comfort</span></h2>
+                            </div>
+                            <!-- Section Title End -->
+
+                            <!-- Appointment Content Body Start -->
+<div class="appointment-content-body">
+
+    <!-- First Row Start -->
+    <div class="appointment-row" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 0%;">
+        <!-- Appointment Item 1 -->
+        <div class="appointment-item wow fadeInUp" data-wow-delay="0.4s" style="flex: 1 1 45%;">
+            <div class="icon-box">
+                <img src="https://www.colour-blindness.com/CBTests/ishihara/Plate1.gif" alt="" style="transform: scale(1.5);">
+            </div>
+            <div class="appointment-item-content">
+                <h3 style="font-size: 1rem;">Demonstration Plate</h3>
+                <p style="font-size: 0.8rem;"><a href="tel:761853398">Visible to everyone; used to demonstrate the test.</a></p>
+            </div>
+        </div>
+
+        <!-- Appointment Item 2 -->
+        <div class="appointment-item wow fadeInUp" data-wow-delay="0.4s" style="flex: 1 1 45%; margin-top: -15%;">
+            <div class="icon-box">
+                <img src="https://www.colour-blindness.com/CBTests/ishihara/Plate2.gif" alt="" style="transform: scale(1.5);">
+            </div>
+            <div class="appointment-item-content">
+                <h3 style="font-size: 1rem;">Vanishing Plate - 1</h3>
+                <p style="font-size: 0.8rem;"><a href="tel:761853398">Tests for red-green color deficiencies; individuals with such deficiencies may not see the number.</a></p>
+            </div>
+        </div>
+    </div>
+    <!-- First Row End -->
+
+    <!-- Second Row Start -->
+    <div class="appointment-row" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 0px; margin-bottom: -20%">
+        <!-- Appointment Item 3 -->
+        <div class="appointment-item wow fadeInUp" data-wow-delay="0.4s" style="flex: 1 1 45%;">
+            <div class="icon-box">
+                <img src="https://www.colour-blindness.com/CBTests/ishihara/Plate4.gif" alt="" style="transform: scale(1.5);">
+            </div>
+            <div class="appointment-item-content">
+                <h3 style="font-size: 1rem;">Vanishing Plate</h3>
+                <p style="font-size: 0.8rem;"><a href="tel:761853398"> Similar to Plate 10; helps identify red-green color deficiencies.</a></p>
+            </div>
+        </div>
+
+        <!-- Appointment Item 4 -->
+        <div class="appointment-item wow fadeInUp" data-wow-delay="0.6s" style="flex: 1 1 45%; margin-top: -17%;">
+            <div class="appointment-item wow fadeInUp" data-wow-delay="0.4s" style="flex: 1 1 45%;">
+                <div class="icon-box">
+                    <img src="https://www.colour-blindness.com/CBTests/ishihara/Plate15.gif" alt="" style="transform: scale(1.5);">
+                </div>
+                <div class="appointment-item-content">
+                    <h3 style="font-size: 1rem;">Hidden Digit Plate</h3>
+                    <p style="font-size: 0.8rem;"><a href="tel:761853398">Designed so that only individuals with red-green color deficiencies can see the number.</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Second Row End -->
+
+</div>
+<!-- Appointment Content Body End -->
+
+                            </div>
+                            <!-- Appointment Content Body End -->
+                        </div>
+                        <!-- Our Appointment Content End -->
+                    </div>
+                    <!-- Our Appointment Box End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Our Appointment Section End -->
+
+    <script>
+        document.getElementById("appointmentForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+    
+            const p1 = document.getElementById("services").value;
+            const p2 = document.getElementById("time_slot").value;
+            const p3 = document.getElementById("instructor").value;
+            const p4 = document.getElementById("session_type").value;
+    
+            if (p1 !== "12") {
+                alert("Test invalid – everyone should see 12 in the first plate.");
+                return;
+            }
+    
+            let result = "normal";
+    
+            const isProtanopia = p2 !== "8";
+            const isDeuteranopia = p3 !== "5";
+            const isHidden45 = p4 === "45";
+    
+            if (isProtanopia && isDeuteranopia) {
+                result = "achromatopsia";
+            } else if (isProtanopia) {
+                result = "protanopia";
+            } else if (isDeuteranopia) {
+                result = "deuteranopia";
+            } else if (isHidden45) {
+                result = "redgreen";
+            }
+    
+            // 1. මෙතනදී අපි "sessionStorage" පාවිච්චි කරන්නේ තාවකාලිකව විතරයි.
+            // මේකෙන් Site එකේ පාට මාරු වෙන්නේ නෑ. Register වෙනකම් විතරයි මේක තියෙන්නේ.
+            sessionStorage.setItem("tempVisionType", result);
+    
+            alert("Test Complete! Result: " + result + ". Redirecting to Registration...");
+            window.location.href = "register-touch.html";
+        });
+    </script>
+
+    <!-- Jquery Library File -->
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap js file -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Validator js file -->
+    <script src="js/validator.min.js"></script>
+    <!-- SlickNav js file -->
+    <script src="js/jquery.slicknav.js"></script>
+    <!-- Swiper js file -->
+    <script src="js/swiper-bundle.min.js"></script>
+    <!-- Counter js file -->
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/jquery.counterup.min.js"></script>
+    <!-- Magnific js file -->
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <!-- SmoothScroll -->
+    <script src="js/SmoothScroll.js"></script>
+    <!-- Parallax js -->
+    <script src="js/parallaxie.js"></script>
+    <!-- MagicCursor js file -->
+    <script src="js/gsap.min.js"></script>
+    <script src="js/magiccursor.js"></script>
+    <!-- Text Effect js file -->
+    <script src="js/SplitText.js"></script>
+    <script src="js/ScrollTrigger.min.js"></script>
+    <!-- YTPlayer js File -->
+    <script src="js/jquery.mb.YTPlayer.min.js"></script>
+    <!-- Wow js file -->
+    <script src="js/wow.min.js"></script>
+    <!-- Main Custom js file -->
+    <script src="js/function.js"></script>
+</body>
+
+</html>

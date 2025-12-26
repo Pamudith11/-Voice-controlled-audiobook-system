@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	<meta name="description" content="">
+	<meta name="keywords" content="">
+	<meta name="author" content="">
+	<!-- Page Title -->
+    <title>මල් කිණිත්තක පුරාවෘත්තය (Forget Me not)</title>
+	<!-- Favicon Icon -->
+	<link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+	<!-- Google Fonts Css-->
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&amp;family=Sora:wght@100..800&amp;display=swap" rel="stylesheet">
+	<!-- Bootstrap Css -->
+	<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+	<!-- SlickNav Css -->
+	<link href="css/slicknav.min.css" rel="stylesheet">
+	<!-- Swiper Css -->
+	<link rel="stylesheet" href="css/swiper-bundle.min.css">
+	<!-- Font Awesome Icon Css-->
+	<link href="css/all.min.css" rel="stylesheet" media="screen">
+	<!-- Animated Css -->
+	<link href="css/animate.css" rel="stylesheet">
+    <!-- Magnific Popup Core Css File -->
+	<link rel="stylesheet" href="css/magnific-popup.css">
+	<!-- Mouse Cursor Css File -->
+	<link rel="stylesheet" href="css/mousecursor.css">
+	<!-- Main Custom Css -->
+	<link href="css/custom.css" rel="stylesheet" media="screen">
+
+    <style>
+        /* --- Side Popup Main Box --- */
+        #nextBookPopup {
+            position: fixed;
+            right: -450px;
+            bottom: 30px;
+            width: 380px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 0;
+            /* Padding handled inside wrapper */
+            z-index: 99999;
+            font-family: 'Sora', sans-serif;
+            transition: right 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            overflow: hidden;
+            /* Important for loading bar */
+        }
+    
+        #nextBookPopup.active {
+            right: 30px;
+        }
+    
+        /* Content Wrapper */
+        .popup-content-wrapper {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: opacity 0.3s ease;
+        }
+    
+        /* Book Details */
+        .next-book-details {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 12px;
+        }
+    
+        .book-thumb {
+            width: 70px;
+            height: 70px;
+            flex-shrink: 0;
+            position: relative;
+        }
+    
+        .book-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    
+        .soon-badge {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            background: #FF3B30;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(255, 59, 48, 0.4);
+        }
+    
+        .book-info h4 {
+            font-size: 15px;
+            margin: 0 0 4px;
+            color: #333;
+            font-weight: 700;
+        }
+    
+        .book-info p {
+            font-size: 12px;
+            margin: 0;
+            color: #666;
+        }
+    
+        .popup-desc {
+            font-size: 13px;
+            color: #555;
+            text-align: center;
+            margin: 0;
+        }
+    
+        /* Buttons */
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+        }
+    
+        .btn-notify {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #000;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+    
+        .btn-notify:active {
+            transform: scale(0.95);
+        }
+    
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #fff;
+            color: #888;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+    
+        /* 10s Countdown Loading Bar (RED LINE) */
+        .btn-cancel::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #FF3B30;
+            /* Red color */
+            width: 0%;
+            transition: none;
+            /* No transition initially */
+            z-index: -1;
+        }
+    
+        #nextBookPopup.active .btn-cancel::after {
+            width: 100%;
+            transition: width 10s linear;
+            /* Start 10s animation when active */
+        }
+    
+        /* --- APPLE PAY SUCCESS ANIMATION --- */
+        .success-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 100;
+            /* Upped the Z-Index */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.9);
+            transition: all 0.4s ease;
+        }
+    
+        .success-view.show {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+    
+        /* The Circle */
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #4bb71b;
+            /* Green */
+            fill: none;
+            animation: none;
+        }
+    
+        /* The Check */
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            stroke: #4bb71b;
+            stroke-width: 3;
+            fill: none;
+            animation: none;
+        }
+    
+        /* Animation Keyframes triggers via JS Class */
+        .success-view.show .checkmark-circle {
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+    
+        .success-view.show .checkmark-check {
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+    
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+    
+        .success-text {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: 0.3s delay 0.8s;
+        }
+    
+        .success-view.show .success-text {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+<div id="nextBookPopup">
+
+    <div class="popup-content-wrapper" id="popupContent">
+        <div class="next-book-details">
+            <div class="book-thumb">
+                <div class="soon-badge">Soon</div>
+                <img src="images/ws/3b.jpg" alt="Next Book">
+            </div>
+            <div class="book-info">
+                <h4>Madol Doova</h4>
+                <p>Martin Wickramasinghe</p>
+            </div>
+        </div>
+
+        <p class="popup-desc">Get notified when this audiobook is released?</p>
+
+        <div class="popup-actions">
+            <button class="btn-notify" id="notifyMeBtn">Notify Me</button>
+            <button class="btn-cancel" id="popupCancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <div class="success-view" id="successView">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="80" height="80">
+            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        </svg>
+        <div class="success-text">Success</div>
+    </div>
+
+</div>
+
+    <!-- Preloader Start -->
+	<div class="preloader">
+		<div class="loading-container">
+			<div class="loading"></div>
+			<div id="loading-icon"><img src="images/loader.svg" alt=""></div>
+		</div>
+	</div>
+	<!-- Preloader End -->
+
+    <!-- Header Start -->
+	<header class="main-header">
+		<div class="header-sticky">
+			<nav class="navbar navbar-expand-lg">
+				<div class="container">
+					<!-- Logo Start -->
+					<a class="navbar-brand" href="index.html">
+                        <img src="images/logo1.png" alt="Logo" style="width: 190px; height: auto;">
+					</a>
+					<!-- Logo End -->
+
+					<!-- Main Menu Start -->
+					<div class="collapse navbar-collapse main-menu">
+                        <div class="nav-menu-wrapper">
+                            <ul class="navbar-nav mr-auto" id="menu">
+                                <li class="nav-item"><a class="nav-link" href="index.html">Home</a>                               
+                                <li class="nav-item"><a class="nav-link" href="about.html">About Us</a>
+                                <li class="nav-item"><a class="nav-link" href="catergories.html">Library</a></li>
+                                <li class="nav-item"><a class="nav-link" href="books.html">Books</a></li>
+                                <li class="nav-item submenu"><a class="nav-link" href="#">Pages</a>
+                                    <ul>                                        
+                                        <li class="nav-item"><a class="nav-link" href="team.html">Our Team</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="pricing.html">Pricing Plan</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="testimonials.html">Testimonials</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="image-gallery.html">Image Gallery</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="video-gallery.html">Video Gallery</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
+                                <li class="nav-item highlighted-menu"><a class="nav-link" href="book-appointment.html">Book Appointment</a></li>             
+                            </ul>
+                        </div>
+                        
+                        <!-- Header Contact Btn Start -->
+                        <div class="header-contact-btn">
+                            <a href="tel:761853398" class="header-contact-now"><i class="fa-solid fa-phone-volume"></i>70 556 6003</a>
+                            <a href="log-1.html" class="btn-default">Get Started</a>
+                        </div>
+                        <!-- Header Contact Btn End -->
+					</div>
+					<!-- Main Menu End -->
+					<div class="navbar-toggle"></div>
+				</div>
+			</nav>
+			<div class="responsive-menu"></div>
+		</div>
+	</header>
+	<!-- Header End -->
+
+    <!-- Page Header Start -->
+    <div class="page-header parallaxie">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-12">
+                    <!-- Page Header Box Start -->
+                    <div class="page-header-box">
+                        <h1 class="text-anime-style-2" data-cursor="-opaque">Forget Me not <span></span></h1>
+                        <nav class="wow fadeInUp">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="index.html">home</a></li>
+                                <li class="breadcrumb-item"><a href="catergories.html">library</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Forget Me not</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <!-- Page Header Box End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Page Book Single Start -->
+<div class="page-service-single">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="page-single-sidebar">
+                    <!-- Book Promo Sidebar -->
+                    <div class="sidebar-cta-box wow fadeInUp" data-wow-delay="0.25s">
+                        <div class="sidebar-cta-image">
+                            <figure class="image-anime">
+                                <img src="images/ws/3b.jpg" alt="Forget Me Not - Book Cover">
+                            </figure>
+                        </div>
+                        <div class="sidebar-cta-content">
+                            <h3>මල් කිණිත්තක පුරාවෘත්තය<br>(Forget Me Not)</h3>
+                        
+                            <!-- Button Container -->
+                            <div style="display: flex; gap: 10px;">
+                                <a href="javascript:void(0);" id="playAudioBtn" class="btn-default" onclick="playYouTubeAudio('1-AP_JTAvYc')">Listen Book</a>
+                                <a href="javascript:void(0);" id="stopAudioBtn" class="btn-default" onclick="stopYouTubeAudio()" style="display: none;">Stop Audio</a>
+                                <a href="https://www.honwix.com/book/15a353a25e9/read" id="readBookBtn" class="btn-default">Read Book</a>
+
+                            </div>
+                        
+                            <!-- Hidden YouTube Player -->
+                            <div id="hiddenPlayer" style="display: none;"></div>
+                        
+                            <script>
+                                let player;
+                                let popupTimer;
+                                let autoCloseTimer;
+                                const POPUP_DELAY = 1000; 
+                                const AUTO_CLOSE_TIME = 10000; 
+                            
+                                function playYouTubeAudio(videoId) {
+                                    if (!player) {
+                                        const tag = document.createElement('script');
+                                        tag.src = "https://www.youtube.com/iframe_api";
+                                        document.body.appendChild(tag);
+                                        window.onYouTubeIframeAPIReady = function () {
+                                            initializePlayer(videoId);
+                                        };
+                                    } else {
+                                        player.loadVideoById(videoId);
+                                        player.playVideo();
+                                        updateButtonState(true);
+                                    }
+                                }
+                            
+                                function initializePlayer(videoId) {
+                                    player = new YT.Player('hiddenPlayer', {
+                                        height: '0',
+                                        width: '0',
+                                        videoId: videoId,
+                                        playerVars: {
+                                            autoplay: 1,
+                                            controls: 0,
+                                            showinfo: 0,
+                                            rel: 0,
+                                            modestbranding: 1
+                                        },
+                                        events: {
+                                            onReady: function (event) {
+                                                event.target.playVideo();
+                                                updateButtonState(true);
+                                            },
+                                            onStateChange: function (event) {
+                                                if (event.data === YT.PlayerState.PLAYING) {
+                                                    updateButtonState(true);
+                                                    hidePopup();
+                                                } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                                                    updateButtonState(false);
+                                                    triggerPopup();
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            
+                                function stopYouTubeAudio() {
+                                    if (player && typeof player.stopVideo === 'function') {
+                                        player.stopVideo();
+                                    }
+                                    updateButtonState(false);
+                                    triggerPopup();
+                                }
+                            
+                                function updateButtonState(isPlayingNow) {
+                                    const playBtn = document.getElementById('playAudioBtn');
+                                    const stopBtn = document.getElementById('stopAudioBtn');
+                                    const readBtn = document.getElementById('readBookBtn');
+                            
+                                    if (isPlayingNow) {
+                                        playBtn.textContent = "Listening...";
+                                        playBtn.classList.add('playing');
+                                        stopBtn.style.display = "inline-block";
+                                        readBtn.style.display = "none";
+                                    } else {
+                                        playBtn.textContent = "Listen Book";
+                                        playBtn.classList.remove('playing');
+                                        stopBtn.style.display = "none";
+                                        readBtn.style.display = "inline-block";
+                                    }
+                                }
+                            
+                                /* --- POPUP LOGIC --- */
+                                function triggerPopup() {
+                                    clearTimeout(popupTimer);
+                                    
+                                    popupTimer = setTimeout(() => {
+                                        const popup = document.getElementById('nextBookPopup');
+                                        
+                                        document.getElementById('popupContent').style.opacity = '1';
+                                        document.getElementById('successView').classList.remove('show');
+                                        
+                                        popup.classList.add('active');
+                            
+                                        clearTimeout(autoCloseTimer);
+                                        autoCloseTimer = setTimeout(() => {
+                                            hidePopup();
+                                        }, AUTO_CLOSE_TIME);
+                            
+                                    }, POPUP_DELAY);
+                                }
+                            
+                                function hidePopup() {
+                                    const popup = document.getElementById('nextBookPopup');
+                                    popup.classList.remove('active');
+                                    clearTimeout(autoCloseTimer);
+                                }
+                            
+                                document.getElementById('popupCancelBtn').addEventListener('click', function() {
+                                    hidePopup();
+                                });
+                            
+                                // --- NEW: Notify Button with Email Logic ---
+                                document.getElementById('notifyMeBtn').addEventListener('click', function() {
+                                    // 1. Stop auto-close timer
+                                    clearTimeout(autoCloseTimer);
+                            
+                                    // 2. Show Success Animation immediately (User feels it's instant)
+                                    document.getElementById('popupContent').style.opacity = '0'; 
+                                    document.getElementById('successView').classList.add('show'); 
+                            
+                                    // 3. Send Email in the background using AJAX
+                                    // Get the book name dynamically from the popup HTML
+                                    let bookName = document.querySelector('.next-book-details h4').innerText;
+                            
+                                    fetch('notify.php', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({ bookName: bookName })
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        console.log("Email status:", data.status);
+                                    })
+                                    .catch(error => {
+                                        console.error("Error sending email:", error);
+                                    });
+                            
+                                    // 4. Close popup after 3 seconds
+                                    setTimeout(() => {
+                                        hidePopup();
+                                    }, 3000); 
+                                });
+                            </script>
+                        
+                            <style>
+                                .btn-default.playing,
+                                .btn-default:hover {
+                                    
+                                    transform: scale(1.05);
+                                }
+                        
+                                .btn-default {
+                                    border: none;
+                                    border-radius: 6px;
+                                    
+                                    text-decoration: none;
+                                    display: inline-block;
+                                    transition: all 0.3s ease;
+                                }
+                            </style>
+                        </div>
+                        
+                    </div>
+
+                    <!-- Book Category -->
+                    <div class="page-catagery-list wow fadeInUp" style="margin-top: 20px;">
+                        <h3>Book Sections</h3>
+                        <ul>
+                            <li><a href="#">Synopsis</a></li>
+                            <li><a href="#">Character Insights</a></li>
+                            <li><a href="#">Behind the Story</a></li>
+                            <li><a href="#">Themes & Symbolism</a></li>
+                            <li><a href="#">Reading Guide</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="service-single-content">
+                    <!-- Book Cover -->
+                    <div class="service-featured-image">
+                        <figure class="image-anime reveal">
+                            <img src="images/ws/2b.jpg" alt="Forget Me Not Book Cover">
+                        </figure>
+                    </div>
+
+                    <!-- Book Description -->
+                    <div class="service-entry">
+                        <p class="wow fadeInUp">
+                            <strong>මල් කිණිත්තක පුරාවෘත්තය (Forget Me Not)</strong> is a compelling Sinhala literary piece that dives into themes of memory, love, and the human experience. It weaves an emotionally resonant story exploring the delicate bonds that connect us across time.
+                        </p>
+
+                        <p class="wow fadeInUp" data-wow-delay="0.2s">
+                            Blending poetic language and rich character development, the novel leads readers through a reflective journey of identity, healing, and meaning.
+                        </p>
+
+                        <!-- Highlights Box -->
+                        <div class="discover-peace-box">
+                            <h2 class="text-anime-style-2">Discover the story <span>within the petals</span></h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.4s">
+                                With evocative prose and vivid imagery, "Forget Me Not" invites you to revisit lost memories, cultural roots, and the strength of the human spirit.
+                            </p>
+
+                            <!-- Highlights -->
+                            <div class="discover-peace-item-list">
+                                <div class="discover-peace-item wow fadeInUp">
+                                    <div class="icon-box">
+                                        <img src="images/" alt="">
+                                    </div>
+                                    <div class="discover-peace-item-content">
+                                        <h3>Deeply Emotional</h3>
+                                        <p>A story that touches your soul and stays with you long after.</p>
+                                    </div>
+                                </div>
+
+                                <div class="discover-peace-item wow fadeInUp" data-wow-delay="0.2s">
+                                    <div class="icon-box">
+                                        <img src="images/" alt="">
+                                    </div>
+                                    <div class="discover-peace-item-content">
+                                        <h3>Culturally Rich</h3>
+                                        <p>Elegantly portrays Sri Lankan heritage with literary beauty.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="discover-peace-info-box wow fadeInUp" data-wow-delay="0.4s">
+                                <div class="icon-box">
+                                    <img src="images/" alt="">
+                                </div>
+                                <div class="discover-peace-info-content">
+                                    <h3>An essential read for those who appreciate poetic realism and emotional storytelling.</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Themes -->
+                        <div class="service-benefits-box">
+                            <h2 class="text-anime-style-2">Themes of <span>Forget Me Not</span></h2>
+                            <p class="wow fadeInUp">
+                                The novel explores universal themes that speak to readers across generations:
+                            </p>
+                            <ul class="wow fadeInUp" data-wow-delay="0.2s">
+                                <li>Memory and Identity</li>
+                                <li>Love and Longing</li>
+                                <li>Loss and Redemption</li>
+                                <li>Societal Expectations</li>
+                                <li>Emotional Healing</li>
+                            </ul>
+                            <div class="service-benefits-image">
+                                <figure class="image-anime reveal">
+                                    <img src="images/ws/1b.jpg" alt="Themes Illustration">
+                                </figure>
+                            </div>
+                        </div>
+
+                        <!-- Reading Journey -->
+                        <div class="service-process-box">
+                            <h2 class="text-anime-style-2">Your journey through <span>Forget Me Not</span></h2>
+                            <p class="wow fadeInUp">This book is more than just a narrative—it's a journey into understanding yourself and others more deeply.</p>
+                            <div class="service-process-steps">
+                                <div class="how-work-step wow fadeInUp" data-wow-delay="0.2s">
+                                    <div class="how-work-step-no">
+                                        <h2>01</h2>
+                                    </div>
+                                    <div class="how-work-step-content">
+                                        <h3>Begin the Story</h3>
+                                        <p>Step into a realm of poetic emotion and quiet introspection.</p>
+                                    </div>
+                                </div>
+
+                                <div class="how-work-step wow fadeInUp" data-wow-delay="0.4s">
+                                    <div class="how-work-step-no">
+                                        <h2>02</h2>
+                                    </div>
+                                    <div class="how-work-step-content">
+                                        <h3>Meet the Characters</h3>
+                                        <p>Experience lives shaped by love, hardship, and cultural history.</p>
+                                    </div>
+                                </div>
+
+                                <div class="how-work-step wow fadeInUp" data-wow-delay="0.6s">
+                                    <div class="how-work-step-no">
+                                        <h2>03</h2>
+                                    </div>
+                                    <div class="how-work-step-content">
+                                        <h3>Reflect and Feel</h3>
+                                        <p>Let the narrative stir your thoughts about memory, life, and meaning.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQs -->
+                    <div class="page-single-faqs">
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp">Frequently Asked Questions</h3>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Book <span>FAQs</span></h2>
+                        </div>
+                        <div class="faq-accordion" id="faqaccordion">
+                            <div class="accordion-item wow fadeInUp" data-wow-delay="0.2s">
+                                <h2 class="accordion-header" id="faqheading1">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqcollapse1">
+                                        Is this book suitable for young readers?
+                                    </button>
+                                </h2>
+                                <div id="faqcollapse1" class="accordion-collapse collapse" data-bs-parent="#faqaccordion">
+                                    <div class="accordion-body">
+                                        <p>This book is recommended for mature teens and adults due to its emotional themes and depth.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item wow fadeInUp" data-wow-delay="0.4s">
+                                <h2 class="accordion-header" id="faqheading2">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqcollapse2">
+                                        Is this book available as an audiobook?
+                                    </button>
+                                </h2>
+                                <div id="faqcollapse2" class="accordion-collapse collapse" data-bs-parent="#faqaccordion">
+                                    <div class="accordion-body">
+                                        <p>Yes! A Sinhala voice-narrated audiobook version will be available soon. Stay tuned!</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item wow fadeInUp" data-wow-delay="0.6s">
+                                <h2 class="accordion-header" id="faqheading3">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqcollapse3">
+                                        Where can I buy the book?
+                                    </button>
+                                </h2>
+                                <div id="faqcollapse3" class="accordion-collapse collapse" data-bs-parent="#faqaccordion">
+                                    <div class="accordion-body">
+                                        <p>You can buy it online or reach out through our contact page for local purchase options.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End FAQs -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Page Book Single End -->
+
+
+
+    <!-- Footer Main Start -->
+<footer class="footer-main">
+    <div class="container" >
+        <div class="row">
+            <div class="col-lg-12">
+                <!-- Footer Header Start -->
+                <div class="footer-header">
+                    <!-- Footer About Start -->
+                    <div class="footer-about">
+                        <div class="footer-logo">
+                            <img src="images/logo1.png" alt="Footer Logo">
+                        </div>
+                        <div class="about-footer-content">
+                            <p>Empowering visually impaired students with accessible audiobooks for enhanced learning.</p>
+                        </div>
+                    </div>
+                    <!-- Footer About End -->
+                    
+                    <!-- Footer Social Links Start -->
+                    <div class="footer-social-links">
+                        <ul>
+                            <li><a href="#"><i class="fa-brands fa-pinterest-p"></i></a></li>
+                            <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
+                            <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
+                            <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
+                        </ul>
+                    </div>
+                    <!-- Footer Social Links End -->
+                </div>
+                <!-- Footer Header End -->
+            </div>
+
+            <div class="col-lg-2 col-md-3">
+                <!-- Footer Links Start -->
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index-2.html">Home</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="catergories.html">Library</a></li>
+                        <li><a href="books.html">Books</a></li>
+                    </ul>
+                </div>
+                <!-- Footer Links End -->
+            </div>
+
+            <div class="col-lg-2 col-md-4">
+                <!-- Footer Links Start -->
+                <div class="footer-links">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="service-single.html">Audiobook Creation</a></li>
+                        <li><a href="service-single.html">Learning Resources</a></li>
+                        <li><a href="service-single.html">Narration Services</a></li>
+                        <li><a href="service-single.html">Educational Tools</a></li>
+                    </ul>
+                </div>
+                <!-- Footer Links End -->
+            </div>
+
+            <div class="col-lg-3 col-md-5">
+                <!-- Footer Contact Links Start -->
+                <div class="footer-links footer-contact-links">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><a href="tel:761852398">+94 70 556 6003 </a></li>
+                        <li><a href="mailto:info@domainname.com">info@voiceaccess.com</a></li>
+                        <li>SLTC Padukka</li>
+                    </ul>
+                </div>
+                <!-- Footer Contact Links End -->
+            </div>
+            
+            <div class="col-lg-5">
+                <!-- Footer Newsletter Box Start -->
+                <div class="footer-newsletter-box">
+                    <!-- Footer Newsletter Title Start -->
+                    <div class="section-title">
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">Subscribe for Audiobook Updates and Educational Resources</h2>
+                    </div>
+                    <!-- Footer Newsletter Title End -->
+
+                    <!-- Newsletter Form Start -->
+                    <div class="newsletter-form">
+                        <form id="newsletterForm" action="#" method="POST">
+                            <div class="form-group">
+                                <input type="email" name="email" class="form-control" id="mail" placeholder="Enter Your Email" required>
+                                <button type="submit" class="newsletter-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Newsletter Form End -->
+                </div>
+                <!-- Footer Newsletter Box End -->
+            </div>
+
+            <div class="col-lg-12">
+                <!-- Footer Copyright Section Start -->
+                <div class="footer-copyright">
+                    <!-- Footer Copyright Text Start -->
+                    <div class="footer-copyright-text">
+                        <p>Copyright © 2025 All Rights Reserved.</p>
+                    </div>
+                    <!-- Footer Copyright Text End -->
+                            
+                    <!-- Footer Privacy Policy Start -->
+                    <div class="footer-privacy-policy">
+                        <ul>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms & Conditions</a></li>
+                            <li><a href="#">Help</a></li>
+                        </ul>
+                    </div>
+                    <!-- Footer Privacy Policy End -->
+                </div>
+                <!-- Footer Copyright Section End -->
+            </div>
+        </div>
+    </div>
+</footer>
+<!-- Footer Main End -->
+<div id="nextBookPopup">
+    <div class="popup-content-wrapper">
+        <div class="next-book-details">
+            <div class="book-thumb">
+                <div class="soon-badge">Soon</div>
+                <img src="images/ws/3b.jpg" alt="Next Book">
+            </div>
+            <div class="book-info">
+                <h4>Madol Doova</h4>
+                <p>Martin Wickramasinghe</p>
+            </div>
+        </div>
+
+        <p class="popup-desc">Do you want to get notified when this audiobook is released?</p>
+
+        <div class="popup-actions">
+            <button class="btn-notify" id="notifyMeBtn">Notify Me</button>
+            <button class="btn-cancel" id="popupCancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <div class="success-view" id="successView">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="80" height="80">
+            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+            <path class="checkmark-check" fill="none" stroke="#4bb71b" stroke-width="4"
+                d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        </svg>
+        <div class="success-text">You're on the list!</div>
+    </div>
+</div>
+
+    <!-- Jquery Library File -->
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap js file -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Validator js file -->
+    <script src="js/validator.min.js"></script>
+    <!-- SlickNav js file -->
+    <script src="js/jquery.slicknav.js"></script>
+    <!-- Swiper js file -->
+    <script src="js/swiper-bundle.min.js"></script>
+    <!-- Counter js file -->
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/jquery.counterup.min.js"></script>
+    <!-- Magnific js file -->
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <!-- SmoothScroll -->
+    <script src="js/SmoothScroll.js"></script>
+    <!-- Parallax js -->
+    <script src="js/parallaxie.js"></script>
+    <!-- MagicCursor js file -->
+    <script src="js/gsap.min.js"></script>
+    <script src="js/magiccursor.js"></script>
+    <!-- Text Effect js file -->
+    <script src="js/SplitText.js"></script>
+    <script src="js/ScrollTrigger.min.js"></script>
+    <!-- YTPlayer js File -->
+    <script src="js/jquery.mb.YTPlayer.min.js"></script>
+    <!-- Wow js file -->
+    <script src="js/wow.min.js"></script>
+    <!-- Main Custom js file -->
+    <script src="js/function.js"></script>
+</body>
+
+</html>

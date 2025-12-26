@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>Request a Book</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&amp;family=Sora:wght@100..800&amp;display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/slicknav.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/swiper-bundle.min.css">
+    <link href="css/all.min.css" rel="stylesheet" media="screen">
+    <link href="css/animate.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <link rel="stylesheet" href="css/mousecursor.css">
+    <link href="css/custom.css" rel="stylesheet" media="screen">
+
+    <style>
+        /* Side Popup Style */
+        #sidePopup {
+            position: fixed;
+            right: -400px; /* Hidden by default */
+            top: 100px;
+            width: 320px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px 0 0 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            transition: 0.5s ease;
+            z-index: 99999; /* On top of everything */
+            border-left: 5px solid #25D366; /* WhatsApp Green Accent */
+        }
+
+        #sidePopup h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            font-family: 'Sora', sans-serif;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        #sidePopup p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .popup-buttons button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        #yesBtn {
+            background: #25D366;
+            color: white;
+        }
+        #yesBtn:hover { background: #1da851; }
+
+        #noBtn {
+            background: #e0e0e0;
+            color: #333;
+        }
+        #noBtn:hover { background: #c9c9c9; }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-sticky">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <a class="navbar-brand" href="index.html">
+                        <img src="images/logo1.png" alt="Logo" style="width: 190px; height: auto;">
+                    </a>
+                    <div class="collapse navbar-collapse main-menu">
+                        <div class="nav-menu-wrapper">
+                            <ul class="navbar-nav mr-auto" id="menu">
+                                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                                <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+                                <li class="nav-item"><a class="nav-link" href="catergories.html">Library</a></li>
+                                <li class="nav-item"><a class="nav-link" href="books.html">Books</a></li>
+                                <li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
+                                <li class="nav-item highlighted-menu"><a class="nav-link" href="book-appointment.html">Book Appointment</a></li>             
+                            </ul>
+                        </div>
+                        <div class="header-contact-btn">
+                            <a href="tel:761853398" class="header-contact-now"><i class="fa-solid fa-phone-volume"></i>70 556 6003</a>
+                            <a href="log-1.html" class="btn-default">Get Started</a>
+                        </div>
+                    </div>
+                    <div class="navbar-toggle"></div>
+                </div>
+            </nav>
+            <div class="responsive-menu"></div>
+        </div>
+    </header>
+
+    <div class="page-header parallaxie">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-12">
+                    <div class="page-header-box">
+                        <h1 class="text-anime-style-2" data-cursor="-opaque">Request a Book</h1>
+                        <nav class="wow fadeInUp">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="index.html">home</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">request book</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="page-contact-us">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="contact-us-form">
+                        <div class="section-title text-center">
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Request an <span>Audiobook</span></h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.2s">Fill out the form below to request an audiobook. Our team will review your request and notify you when it becomes available.</p>
+                        </div>
+                        <div class="contact-form">
+                            <form id="bookRequestForm" class="wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="row">
+                                    <div class="form-group col-md-6 mb-4">
+                                        <input type="text" name="fname" class="form-control" id="fname" placeholder="First name" required>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                    <div class="form-group col-md-6 mb-4">
+                                        <input type="text" name="lname" class="form-control" id="lname" placeholder="Last name" required>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                    <div class="form-group col-md-6 mb-4">
+                                        <input type="email" name="email" class="form-control" id="email" placeholder="E-mail" required>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                    <div class="form-group col-md-6 mb-4">
+                                        <input type="text" name="phone" class="form-control" id="phone" placeholder="Phone" required>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                    <div class="form-group col-md-12 mb-4">
+                                        <input type="text" name="book_title" class="form-control" id="book_title" placeholder="Book Title" required>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                    <div class="form-group col-md-12 mb-4">
+                                        <input type="text" name="author" class="form-control" id="author" placeholder="Author" required>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                    <div class="form-group col-md-12 mb-5">
+                                        <textarea name="message" class="form-control" id="message" rows="3" placeholder="Additional details or comments..."></textarea>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn-default">Submit Book Request</button>
+                                        <div id="msgSubmit" class="h3 hidden"></div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="footer-main">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="footer-header">
+                        <div class="footer-about">
+                            <div class="footer-logo">
+                                <img src="images/logo1.png" alt="Footer Logo">
+                            </div>
+                            <div class="about-footer-content">
+                                <p>Empowering visually impaired students with accessible audiobooks for enhanced learning.</p>
+                            </div>
+                        </div>
+                        <div class="footer-social-links">
+                            <ul>
+                                <li><a href="#"><i class="fa-brands fa-pinterest-p"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3">
+                    <div class="footer-links">
+                        <h3>Quick Links</h3>
+                        <ul>
+                            <li><a href="index-2.html">Home</a></li>
+                            <li><a href="about.html">About Us</a></li>
+                            <li><a href="catergories.html">Library</a></li>
+                            <li><a href="books.html">Books</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <div class="footer-links">
+                        <h3>Services</h3>
+                        <ul>
+                            <li><a href="service-single.html">Audiobook Creation</a></li>
+                            <li><a href="service-single.html">Learning Resources</a></li>
+                            <li><a href="service-single.html">Narration Services</a></li>
+                            <li><a href="service-single.html">Educational Tools</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-5">
+                    <div class="footer-links footer-contact-links">
+                        <h3>Contact</h3>
+                        <ul>
+                            <li><a href="tel:761852398">+94 70 556 6003 </a></li>
+                            <li><a href="mailto:info@domainname.com">info@voiceaccess.com</a></li>
+                            <li>SLTC Padukka</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="footer-newsletter-box">
+                        <div class="section-title">
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Subscribe for Audiobook Updates and Educational Resources</h2>
+                        </div>
+                        <div class="newsletter-form">
+                            <form id="newsletterForm" action="#" method="POST">
+                                <div class="form-group">
+                                    <input type="email" name="email" class="form-control" id="mail" placeholder="Enter Your Email" required>
+                                    <button type="submit" class="newsletter-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="footer-copyright">
+                        <div class="footer-copyright-text">
+                            <p>Copyright © 2025 All Rights Reserved.</p>
+                        </div>
+                        <div class="footer-privacy-policy">
+                            <ul>
+                                <li><a href="#">Privacy Policy</a></li>
+                                <li><a href="#">Terms & Conditions</a></li>
+                                <li><a href="#">Help</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="sidePopup">
+        <h3>Request Sent!</h3>
+        <p>Your book request has been submitted successfully. <br>Would you like WhatsApp updates?</p>
+        <div class="popup-buttons">
+            <button id="yesBtn">Yes, Notify me</button>
+            <button id="noBtn">No, thanks</button>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/validator.min.js"></script>
+    <script src="js/jquery.slicknav.js"></script>
+    <script src="js/swiper-bundle.min.js"></script>
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/jquery.counterup.min.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/SmoothScroll.js"></script>
+    <script src="js/parallaxie.js"></script>
+    <script src="js/gsap.min.js"></script>
+    <script src="js/magiccursor.js"></script>
+    <script src="js/SplitText.js"></script>
+    <script src="js/ScrollTrigger.min.js"></script>
+    <script src="js/jquery.mb.YTPlayer.min.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/function.js"></script>
+
+    <script>
+        document.getElementById("bookRequestForm").addEventListener("submit", function(e) {
+            e.preventDefault(); // Stop page reload
+
+            // Simple validation check
+            var form = this;
+            if (!form.checkValidity()) {
+                // If the existing validator script handles it, let it fail. 
+                // Otherwise, we just stop here.
+                return;
+            }
+
+            let formData = new FormData(this);
+            let submitBtn = form.querySelector("button[type='submit']");
+            let originalBtnText = submitBtn.innerHTML;
+
+            submitBtn.innerHTML = "Sending...";
+            submitBtn.disabled = true;
+
+            fetch("book_submitv.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+
+                if (data.status === "success") {
+                    // Clear form
+                    form.reset();
+                    // Show Popup
+                    showPopup();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                alert("Something went wrong. Please try again.");
+                console.error(err);
+            });
+        });
+
+        function showPopup() {
+            document.getElementById("sidePopup").style.right = "20px";
+        }
+
+        document.getElementById("yesBtn").addEventListener("click", function() {
+            // Redirect to WhatsApp
+            window.location.href = "https://wa.me/94703927300?text=Hello!%20I%20requested%20a%20book%20and%20would%20like%20updates.";
+        });
+
+        document.getElementById("noBtn").addEventListener("click", function() {
+            // Close Popup
+            document.getElementById("sidePopup").style.right = "-400px";
+        });
+    </script>
+</body>
+</html>

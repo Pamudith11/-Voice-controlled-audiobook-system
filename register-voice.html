@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Voice - VoiceAccess</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Sora:wght@100..800&display=swap"
+        rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/all.min.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <style>
+        /* DARK POPUP STYLE */
+        .agent-widget {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 360px;
+            background: rgba(25, 25, 25, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 25px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 9999;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+            color: white;
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .agent-icon {
+            width: 50px;
+            height: 50px;
+            background: #333;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            border: 1px solid #555;
+        }
+
+        .agent-icon.speaking {
+            animation: pulse-gray 1s infinite;
+            border-color: #fff;
+        }
+
+        @keyframes pulse-gray {
+            0% {
+                transform: scale(1);
+                background: #333;
+            }
+
+            50% {
+                transform: scale(1.1);
+                background: #555;
+            }
+
+            100% {
+                transform: scale(1);
+                background: #333;
+            }
+        }
+
+        .agent-text h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .agent-text p {
+            margin: 0;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        /* GESTURE BOX */
+        .gesture-box {
+            background: #000;
+            border-radius: 15px;
+            padding: 15px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #333;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gesture-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .gesture-icon-display {
+            font-size: 24px;
+        }
+
+        /* SUCCESS CIRCLE */
+        .success-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            color: #000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            animation: popScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popScale {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* FULL SCREEN CLICK OVERLAY (Accessibility Friendly) */
+        .start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body onclick="initApp()">
+    <div class="start-overlay" id="startOverlay" role="button" aria-label="Double tap anywhere to start registration">
+        <i class="fa-solid fa-power-off" style="font-size: 80px; color: #888; margin-bottom: 30px;"></i>
+        <h1 style="color:white; font-size: 2.5rem;">Tap Anywhere to Start</h1>
+        <p style="color: #666; font-size: 1.2rem;">Blind Accessibility Mode Active</p>
+    </div>
+
+    <div class="who-we-are">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="who-we-are-image">
+                        <div class="camera-box"
+                            style="position: relative; border: 4px solid #444; border-radius: 20px; overflow: hidden; height: 400px; background: #000;">
+                            <video id="video" autoplay playsinline muted
+                                style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                            <canvas id="canvas" style="display:none;"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="who-we-are-content">
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp" style="color:#888;">Registration</h3>
+                            <h2 class="text-anime-style-2">Create <span>Voice ID</span></h2>
+                            <p class="wow fadeInUp">Follow the voice instructions.</p>
+                        </div>
+                        <p id="statusDisplay" style="margin-top: 15px; font-weight: bold; color: #666;">Waiting for
+                            touch...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="agent-widget" id="agentWidget">
+        <div class="agent-header">
+            <div class="agent-icon" id="agentIcon"><i class="fa-solid fa-robot"></i></div>
+            <div class="agent-text">
+                <h5 id="agentTitle">Assistant</h5>
+                <p id="agentStatus">Initializing...</p>
+            </div>
+        </div>
+        <div class="gesture-box" id="gestureBox">
+            <div class="gesture-info">
+                <span class="gesture-icon-display" id="handIcon">✋</span>
+                <span id="handText">Show Hand</span>
+            </div>
+            <div class="success-circle" id="successCheck"><i class="fa-solid fa-check"></i></div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.slicknav.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/function.js"></script>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const agentWidget = document.getElementById('agentWidget');
+        const agentIcon = document.getElementById('agentIcon');
+        const gestureBox = document.getElementById('gestureBox');
+        const handIcon = document.getElementById('handIcon');
+        const handText = document.getElementById('handText');
+        const successCheck = document.getElementById('successCheck');
+        const startOverlay = document.getElementById('startOverlay');
+
+        let capturedName = "";
+        let currentState = "IDLE"; // IDLE -> LOAD -> WAITING_HAND -> NAME -> CONFIRM -> SAVE
+        let isAppStarted = false;
+
+        // 1. GLOBAL CLICK TO START (Blind Friendly)
+        function initApp() {
+            if(isAppStarted) return;
+            isAppStarted = true;
+
+            // Hide Overlay
+            startOverlay.style.opacity = "0";
+            setTimeout(() => startOverlay.style.display = "none", 500);
+            
+            // Show Widget
+            $(agentWidget).fadeIn().css("display", "flex");
+            updateAgent("Starting...", "Loading System.");
+            
+            // Speak IMMEDIATELY after click
+            speak("Welcome to Voice Access. I am loading the system. Please wait.", () => {
+                loadAI();
+            });
+        }
+
+        // 2. LOAD AI
+        async function loadAI() {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
+                faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
+                faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')
+            ]);
+            
+            const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+            hands.setOptions({maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5});
+            hands.onResults(onHandResults);
+            
+            const camera = new Camera(video, {
+                onFrame: async () => { await hands.send({image: video}); },
+                width: 640, height: 480
+            });
+            camera.start();
+
+            // Ready State
+            setTimeout(() => {
+                currentState = "WAITING_HAND";
+                updateAgent("Ready", "Show hand to start.");
+                gestureBox.style.display = "flex";
+                handText.innerText = "Show Open Hand";
+                
+                speak("System is ready. To start registration, please raise your hand in front of the camera.");
+            }, 3000);
+        }
+
+        // 3. HAND TRACKING
+        function onHandResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                
+                let fingersUp = 0;
+                if(landmarks[8].y < landmarks[6].y) fingersUp++;
+                if(landmarks[12].y < landmarks[10].y) fingersUp++;
+                if(landmarks[16].y < landmarks[14].y) fingersUp++;
+                if(landmarks[20].y < landmarks[18].y) fingersUp++;
+
+                // Thumb Logic (Relaxed)
+                const isThumbUp = landmarks[4].y < landmarks[3].y; 
+                const isThumbDown = landmarks[4].y > landmarks[3].y;
+
+                // --- A. WAITING TO START ---
+                if (currentState === "WAITING_HAND") {
+                    if (fingersUp >= 4) {
+                        currentState = "NAME"; // Change state immediately
+                        handIcon.innerText = "🎤";
+                        handText.innerText = "Listening...";
+                        updateAgent("Listening", "Say Name...");
+                        
+                        speak("I see you. Please say your name clearly.", () => {
+                            startVoiceRecognition();
+                        });
+                    }
+                }
+
+                // --- B. CONFIRMING NAME ---
+                else if (currentState === "CONFIRM") {
+                    if (isThumbUp) { // Relaxed Thumb Up
+                        handIcon.innerText = "👍";
+                        triggerSuccess();
+                    } 
+                    else if (isThumbDown && fingersUp <= 2) { // Relaxed Thumb Down
+                        currentState = "NAME";
+                        handIcon.innerText = "👎";
+                        updateAgent("Retry", "Say name again.");
+                        
+                        speak("Okay, let's try again. What is your name?", () => {
+                            startVoiceRecognition();
+                        });
+                    }
+                }
+            }
+        }
+
+        // 4. VOICE RECOGNITION
+        function startVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if(!SpeechRecognition) return alert("Use Chrome");
+            
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                capturedName = event.results[0][0].transcript;
+                currentState = "CONFIRM"; // Wait for Thumb
+                
+                updateAgent("Verify", `Did you say ${capturedName}?`);
+                handIcon.innerText = "👍 / 👎";
+                handText.innerText = "Confirm Name";
+                
+                speak(`I heard ${capturedName}. Show Thumbs Up to confirm, or Thumbs Down to retry.`);
+            };
+            
+            recognition.onerror = () => {
+                if(currentState === "NAME") {
+                    speak("I didn't hear anything. Please try again.", () => {
+                        recognition.start();
+                    });
+                }
+            };
+        }
+
+        let isSaving = false;
+        function triggerSuccess() {
+            if(isSaving) return;
+            isSaving = true;
+
+            handText.innerText = "Confirmed!";
+            successCheck.style.display = "flex"; 
+
+            updateAgent("Scanning", "Hold still...");
+            speak("Name confirmed. Please hold still while I scan your face.", () => {
+                scanAndSave();
+            });
+        }
+
+        // 5. SAVE
+        async function scanAndSave() {
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                                           .withFaceLandmarks().withFaceDescriptor();
+            
+            if(detection) {
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const imgData = canvas.toDataURL('image/jpeg');
+
+                fetch('api.php?action=save_face', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullname: capturedName,
+                        descriptor: Object.values(detection.descriptor),
+                        image: imgData,
+                        vision_type: 'normal'
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === "success") {
+                        updateAgent("Success", "Profile Created.");
+                        speak("Registration successful. Logging you in.", () => {
+                            window.location.href="login-voice.html";
+                        });
+                    } else {
+                        speak("Database error. Please try again.");
+                        isSaving = false;
+                    }
+                });
+            } else {
+                isSaving = false;
+                speak("I couldn't see your face. Please look at the camera.", () => {
+                    triggerSuccess(); // Retry
+                });
+            }
+        }
+
+        function updateAgent(title, text) {
+            document.getElementById('agentTitle').innerText = title;
+            document.getElementById('agentStatus').innerText = text;
+        }
+
+        function speak(text, callback) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            agentIcon.classList.add('speaking');
+            utterance.onend = () => {
+                agentIcon.classList.remove('speaking');
+                if (callback) callback();
+            };
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+
+</html>

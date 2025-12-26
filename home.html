@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+    <!-- Page Title -->
+    <title>VoiceAccess</title>
+    <!-- Favicon Icon -->
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    <!-- Google Fonts Css-->
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&amp;family=Sora:wght@100..800&amp;display=swap"
+        rel="stylesheet">
+    <!-- Bootstrap Css -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <!-- SlickNav Css -->
+    <link href="css/slicknav.min.css" rel="stylesheet">
+    <!-- Swiper Css -->
+    <link rel="stylesheet" href="css/swiper-bundle.min.css">
+    <!-- Font Awesome Icon Css-->
+    <link href="css/all.min.css" rel="stylesheet" media="screen">
+    <!-- Animated Css -->
+    <link href="css/animate.css" rel="stylesheet">
+    <!-- Magnific Popup Core Css File -->
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <!-- Mouse Cursor Css File -->
+    <link rel="stylesheet" href="css/mousecursor.css">
+    <!-- Main Custom Css -->
+    <link href="css/custom.css" rel="stylesheet" media="screen">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    
+    <style>
+        /* Start Overlay */
+        .start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: white;
+            text-align: center;
+        }
+    
+        /* --- NEW AGENT WIDGET DESIGN (BOX STYLE) --- */
+        .agent-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 320px;
+            height: 400px;
+            
+            background: rgba(25, 25, 25, 0.95);
+            border: 2px solid #444;
+            border-radius: 25px;
+            display: none;
+            flex-direction: column;
+            z-index: 9999;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+    
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    
+        /* Visual Area () */
+        .visual-area {
+            flex: 1;
+            position: relative;
+            background: #111;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        /* Robot Icon */
+        .robot-avatar {
+            font-size: 80px;
+            color: #555;
+            transition: all 0.3s;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 100, 0.2));
+        }
+    
+        .robot-avatar.speaking {
+            animation: pulse-speak 1s infinite;
+            color: #00f260;
+        }
+    
+        @keyframes pulse-speak {
+            0% {
+                transform: scale(1);
+            }
+    
+            50% {
+                transform: scale(1.1);
+            }
+    
+            100% {
+                transform: scale(1);
+            }
+        }
+    
+        /* Live Canvas (අතේ ඇටසැකිල්ල පෙනෙන තැන) */
+        #gestureCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            /* අතක් නැතිනම් පෙනෙන්නේ නෑ */
+            transform: scaleX(-1);
+            /* Mirror effect */
+        }
+    
+        /* Text Area (පහළ කොටස) */
+        .info-area {
+            height: 100px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #1a1a1a;
+        }
+    
+        .info-area h5 {
+            color: #fff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+    
+        .info-area p {
+            color: #aaa;
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+    
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: bold;
+            color: #000;
+            background: #00f260;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            width: fit-content;
+        }
+    
+        /* Hidden Video Source */
+        #aiVideoSource {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <svg style="display: none">
+        <filter id="protanopia">
+            <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0" />
+        </filter>
+
+        <filter id="deuteranopia">
+            <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0" />
+        </filter>
+    </svg>
+
+    <style>
+        .protanopia-filter {
+            filter: url(#protanopia);
+        }
+
+        .deuteranopia-filter {
+            filter: url(#deuteranopia);
+        }
+
+        .achromatopsia-filter {
+            filter: grayscale(1);
+        }
+
+        .redgreen-filter {
+            filter: contrast(0.9) saturate(0.5);
+        }
+    </style>
+
+    <script>
+        const visionType = localStorage.getItem("visionType");
+        if (visionType && visionType !== "normal") {
+          document.body.classList.add(visionType + "-filter");
+        }
+    </script>
+
+
+    <!-- Preloader Start -->
+    <div class="preloader">
+        <div class="loading-container">
+            <div class="loading"></div>
+            <div id="loading-icon"><img src="images/favicon.png" alt=""></div>
+        </div>
+    </div>
+    <!-- Preloader End -->
+
+    <!-- Header Start -->
+    <header class="main-header">
+        <div class="header-sticky">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <!-- Logo Start -->
+                    <a class="navbar-brand" href="index.html">
+                        <img src="images/logo1.png" alt="Logo" style="width: 190px; height: auto;">
+                    </a>
+                    <!-- Logo End -->
+
+                    <!-- Main Menu Start -->
+                    <div class="collapse navbar-collapse main-menu">
+                        <div class="nav-menu-wrapper">
+                            <ul class="navbar-nav mr-auto" id="menu">
+                                <li class="nav-item"><a class="nav-link" href="home.html">Home</a>
+                                <li class="nav-item"><a class="nav-link" href="about.html">About Us</a>
+                                <li class="nav-item"><a class="nav-link" href="catergories-voice.html">Library</a></li>
+                                <li class="nav-item"><a class="nav-link" href="books-voice.html">Books</a></li>
+                                <li class="nav-item submenu"><a class="nav-link" href="#">Pages</a>
+                                    <ul>
+                                        <li class="nav-item"><a class="nav-link" href="team.html">Our Team</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="pricing.html">Pricing Plan</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="testimonials.html">Testimonials</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="image-gallery.html">Image Gallery</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="video-gallery.html">Video Gallery</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
+                                <li class="nav-item highlighted-menu"><a class="nav-link" href="">Book Appointment</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Header Contact Btn Start -->
+                        <div class="header-contact-btn">
+                            <a href="tel:761853398"
+                                class="header-contact-now"><i class="fa-solid fa-phone-volume"></i>70 556 6003</a>
+                            <a href="log-1.html" class="btn-default">Get Started</a>
+                        </div>
+                        <!-- Header Contact Btn End -->
+                    </div>
+                    <!-- Main Menu End -->
+                    <div class="navbar-toggle"></div>
+                </div>
+            </nav>
+            <div class="responsive-menu"></div>
+        </div>
+    </header>
+    <!-- Header End -->
+
+    <!-- Hero Section Start -->
+    <div class="hero hero-video">
+        <!-- Video Start -->
+        <div class="hero-bg-video">
+            <!-- Selfhosted Video Start -->
+            <!-- <video autoplay muted loop id="myVideo"><source src="images/hero-bg-video.mp4" type="video/mp4"></video> -->
+            <video autoplay muted loop id="myVideo">
+                <source src="images/IMG_1993.MP4" type="video/mp4">
+            </video>
+
+            <!-- Selfhosted Video End -->
+
+            <!-- Youtube Video Start -->
+            <!-- <div id="herovideo" class="player" data-property="{videoURL:'74DWwSxsVSs',containment:'.hero-video', showControls:false, autoPlay:true, loop:true, vol:0, mute:false, startAt:0,  stopAt:296, opacity:1, addRaster:true, quality:'large', optimizeDisplay:true}"></div> -->
+            <!-- Youtube Video End -->
+        </div>
+        <!-- Video End -->
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Hero Content Start -->
+                    <div class="hero-content">
+                        <!-- Section Title Start -->
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp">Welcome Voice ACcess</h3>
+                            <h1 class="text-anime-style-2" data-cursor="-opaque">Empowering Visually Impaired Learners
+                            </h1>
+                            <p class="wow fadeInUp" data-wow-delay="0.2s">A Sinhala voice-controlled audiobook system
+                                for visually impaired learners, enabling easy access to educational materials with voice
+                                commands for navigation and playback.</p>
+                        </div>
+                        <!-- Section Title End -->
+
+                        <!-- Hero Content Body Start -->
+                        <div class="hero-body wow fadeInUp" data-wow-delay="0.4s">
+                            <!-- Hero Button Start -->
+                            <div class="hero-btn">
+                                <a href="book-appointment.html" class="btn-default">join us today</a>
+                            </div>
+                            <!-- Hero Button End -->
+
+                            <!-- Video Play Button Start -->
+                            <div class="video-play-button">
+                                <p>Watch Video</p>
+                                <a href="https://www.youtube.com/watch?v=Y-x0efG1seA" class="popup-video"
+                                    data-cursor-text="Play">
+                                    <i class="fa-solid fa-play"></i>
+                                </a>
+                            </div>
+                            <!-- Video Play Button End -->
+                        </div>
+                        <!-- Hero Content Body End -->
+                    </div>
+                    <!-- Hero Content End -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Down Arrow Circle Start -->
+        <div class="down-arrow-circle">
+            <a href="#home-about"><img src="images/down-circle.svg" alt=""><i class="fa-solid fa-arrow-down"></i></a>
+        </div>
+        <!-- Down Arrow Circle End -->
+    </div>
+    <!-- Hero Section End -->
+
+    <!-- About Us Section Start -->
+    <div class="about-us" id="home-about">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <!-- About Images Start -->
+                    <div class="about-images">
+                        <!-- About Image Start -->
+                        <div class="about-image">
+                            <figure>
+                                <img src="images/about-us-imgs.png" alt="">
+                            </figure>
+                        </div>
+                        <!-- About Image End -->
+
+                        <!-- About Image Title Start -->
+                        <div class="about-image-title">
+                            <h2>about us</h2>
+                        </div>
+                        <!-- About Image Title End -->
+                    </div>
+                    <!-- About Images End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- About Us Content Start -->
+                    <div class="about-us-content">
+                        <!-- Section Title Start -->
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp">Our Story</h3>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Empowering education through
+                                <span>innovation and inclusivity</span></h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.2s">We are final-year software engineering
+                                students from SLTC University, dedicated to creating accessible learning solutions for
+                                visually impaired students in Sri Lanka.</p>
+                        </div>
+                        <!-- Section Title End -->
+
+                        <!-- About Content Body Start -->
+                        <div class="about-content-body">
+                            <!-- About Benefit Item Start -->
+                            <div class="about-benefit-item wow fadeInUp" data-wow-delay="0.4s">
+                                <div class="icon-box">
+                                    <img src="images/voice-assistant-line-icon-linear-style-sign-mobile-concept-web-design-microphone-sound-waves-outline-vector-based-ai-367495531.webp" alt="">
+                                </div>
+                                <div class="about-benefit-item-content">
+                                    <h3>Innovative Voice Recognition System</h3>
+                                    <p>Our Sinhala voice-controlled audiobook system ensures seamless navigation and
+                                        accessibility for visually impaired learners.</p>
+                                </div>
+                            </div>
+                            <!-- About Benefit Item End -->
+
+                            <!-- About Benefit Item Start -->
+                            <div class="about-benefit-item wow fadeInUp" data-wow-delay="0.6s">
+                                <div class="icon-box">
+                                    <img src="images/voice-assistant-line-icon-linear-style-sign-mobile-concept-web-design-microphone-sound-waves-outline-vector-based-ai-367495531 copy.webp" alt="">
+                                </div>
+                                <div class="about-benefit-item-content">
+                                    <h3>Customized Accessibility Tools</h3>
+                                    <p>We integrate features like biometric authentication and digital overlays to
+                                        support diverse user needs effectively.</p>
+                                </div>
+                            </div>
+                            <!-- About Benefit Item End -->
+                        </div>
+                        <!-- About Content Body End -->
+
+                        <!-- About Content Button Start -->
+                        <div class="about-content-btn wow fadeInUp" data-wow-delay="0.8s">
+                            <a href="about.html" class="btn-default">more about us</a>
+                        </div>
+                        <!-- About Content Button End -->
+                    </div>
+                    <!-- About Us Content End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- About Us Section End -->
+
+    <!-- Our Services Section Start -->
+    <div class="our-services">
+        <div class="container">
+            <div class="row section-row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Section Title Start -->
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp">Features</h3>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">Innovative features for
+                            <span>enhanced accessibility</span></h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Section Button Start -->
+                    <div class="section-btn wow fadeInUp" data-wow-delay="0.2s">
+                        <a href="services.html" class="btn-default">view all services</a>
+                    </div>
+                    <!-- Section Button End -->
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <!-- Service Item Start -->
+                    <div class="service-item wow fadeInUp">
+                        <!-- Service Header Start -->
+                        <div class="service-header">
+                            <div class="icon-box">
+                                <img src="images/obj1.png" alt="">
+                            </div>
+                            <div class="service-btn">
+                                <a href="service-single.html"><img src="images/arrow-white.svg" alt=""></a>
+                            </div>
+                        </div>
+                        <!-- Service Header End -->
+
+                        <!-- Service Content Start -->
+                        <div class="service-content">
+                            <h3><a href="service-single.html">Sinhala Voice Commands</a></h3>
+                            <p>Navigate, search, and control playback using Sinhala voice inputs.</p>
+                        </div>
+                        <!-- Service Content End -->
+                    </div>
+                    <!-- Service Item End -->
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <!-- Service Item Start -->
+                    <div class="service-item wow fadeInUp" data-wow-delay="0.2s">
+                        <!-- Service Header Start -->
+                        <div class="service-header">
+                            <div class="icon-box">
+                                <img src="images/OBJ2.png" alt="">
+                            </div>
+                            <div class="service-btn">
+                                <a href="service-single.html"><img src="images/arrow-white.svg" alt=""></a>
+                            </div>
+                        </div>
+                        <!-- Service Header End -->
+
+                        <!-- Service Content Start -->
+                        <div class="service-content">
+                            <h3><a href="service-single.html">Color Overlay Support</a></h3>
+                            <p>Personalized digital color overlays generated through Ishihara testing for colorblind
+                                users.</p>
+                        </div>
+                        <!-- Service Content End -->
+                    </div>
+                    <!-- Service Item End -->
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <!-- Service Item Start -->
+                    <div class="service-item wow fadeInUp" data-wow-delay="0.4s">
+                        <!-- Service Header Start -->
+                        <div class="service-header">
+                            <div class="icon-box">
+                                <img src="images/OBJ3.png" alt="">
+                            </div>
+                            <div class="service-btn">
+                                <a href="service-single.html"><img src="images/arrow-white.svg" alt=""></a>
+                            </div>
+                        </div>
+                        <!-- Service Header End -->
+
+                        <!-- Service Content Start -->
+                        <div class="service-content">
+                            <h3><a href="service-single.html">Biometric Authentication</a></h3>
+                            <p>Secure access via voice and facial recognition for visually impaired students.</p>
+                        </div>
+                        <!-- Service Content End -->
+                    </div>
+                    <!-- Service Item End -->
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <!-- Service Item Start -->
+                    <div class="service-item wow fadeInUp" data-wow-delay="0.6s">
+                        <!-- Service Header Start -->
+                        <div class="service-header">
+                            <div class="icon-box">
+                                <img src="images/OBJ4.png" alt="">
+                            </div>
+                            <div class="service-btn">
+                                <a href="service-single.html"><img src="images/arrow-white.svg" alt=""></a>
+                            </div>
+                        </div>
+                        <!-- Service Header End -->
+
+                        <!-- Service Content Start -->
+                        <div class="service-content">
+                            <h3><a href="service-single.html">Audiobook Suggestions</a></h3>
+                            <p>AI-driven recommendations based on academic interest and listening history.</p>
+                        </div>
+                        <!-- Service Content End -->
+                    </div>
+                    <!-- Service Item End -->
+                </div>
+
+                <div class="col-lg-12">
+                    <!-- Section Footer Text Start -->
+                    <div class="section-footer-text wow fadeInUp" data-wow-delay="0.2s">
+                        <p><span>Explore</span>Discover how our features can transform learning. <a
+                                href="contact.html">Contact Us</a></p>
+                    </div>
+                    <!-- Section Footer Text End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Our Services Section End -->
+
+    <!-- What We Do Section Start -->
+    <div class="what-we-do">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-1 order-2">
+                    <!-- What We Image Start -->
+                    <div class="what-we-image">
+                        <figure>
+                            <img src="images/what-we-images.png" alt="">
+                        </figure>
+                    </div>
+                    <!-- What We Image End -->
+                </div>
+
+                <div class="col-lg-6 order-lg-2 order-1">
+                    <!-- What We Content Start -->
+                    <div class="what-we-content">
+                        <!-- Section Title Start -->
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp">what we do</h3>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Transforming Access to
+                                <span>Education Through Voice</span></h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.2s">We design innovative tools for visually
+                                impaired students to engage with university content effortlessly.
+                                Our Sinhala voice-controlled audiobook system bridges accessibility gaps in higher
+                                education.
+                                By integrating smart tech and inclusive design, we empower every learner to thrive.</p>
+                        </div>
+                        <!-- Section Title End -->
+
+                        <!-- What We Body Start -->
+                        <div class="what-we-body wow fadeInUp" data-wow-delay="0.4s">
+                            <ul>
+                                <li>Extensive Digital Catalog</li>
+                                <li>Interactive Learning Tools</li>
+                                <li>Personalized Book Suggestions</li>
+                                <li>Accessible for All Users</li>
+                            </ul>
+                        </div>
+                        <!-- What We Body End -->
+
+                        <!-- What We Button Start -->
+                        <div class="what-we-btn wow fadeInUp" data-wow-delay="0.6s">
+                            <a href="contact.html" class="btn-default">contact now</a>
+                        </div>
+                        <!-- What We Button End -->
+                    </div>
+                    <!-- What We Content End -->
+                </div>
+
+                <div class="col-lg-12 order-3">
+                    <!-- What We Benefits Box Start -->
+                    <div class="what-we-benefits-box">
+                        <!-- What We Benefits List Start -->
+                        <div class="what-we-benefits-list">
+                            <!-- What We Item Start -->
+                            <div class="what-we-item wow fadeInUp">
+                                <div class="icon-box">
+                                    <img src="images/OBJ1W.png" alt="">
+                                </div>
+                                <div class="what-we-item-content">
+                                    <h3>Sinhala Voice Interface</h3>
+                                    <p>Control the platform using natural Sinhala voice commands for easy navigation and
+                                        playback.</p>
+                                </div>
+                            </div>
+                            <!-- What We Item End -->
+
+                            <!-- What We Item Start -->
+                            <div class="what-we-item wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="icon-box">
+                                    <img src="images/OBJ2W.png" alt="">
+                                </div>
+                                <div class="what-we-item-content">
+                                    <h3>Audiobook Access</h3>
+                                    <p>Listen to academic content read aloud in Sinhala—anytime, anywhere.</p>
+                                </div>
+                            </div>
+                            <!-- What We Item End -->
+
+                            <!-- What We Item Start -->
+                            <div class="what-we-item wow fadeInUp" data-wow-delay="0.4s">
+                                <div class="icon-box">
+                                    <img src="images/OBJ3W.png" alt="">
+                                </div>
+                                <div class="what-we-item-content">
+                                    <h3>Biometric Security</h3>
+                                    <p>Log in securely with voice or face recognition tailored for accessibility.</p>
+                                </div>
+                            </div>
+                            <!-- What We Item End -->
+
+                            <!-- What We Item Start -->
+                            <div class="what-we-item wow fadeInUp" data-wow-delay="0.6s">
+                                <div class="icon-box">
+                                    <img src="images/OBJ4W.png" alt="">
+                                </div>
+                                <div class="what-we-item-content">
+                                    <h3>Color Overlay Support</h3>
+                                    <p>Custom digital overlays enhance visibility for colorblind and low-vision users.
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- What We Item End -->
+                        </div>
+                        <!-- What We Benefits List End -->
+
+                        <!-- What We Benefits Image Start -->
+                        <div class="what-we-benefit-image">
+                            <figure class="image-anime">
+                                <img src="images/Firefly a blind person listening audio book boy and girl with lap top creative image with s.png" alt="">
+                            </figure>
+                        </div>
+                        <!-- What We Benefits Image End -->
+                    </div>
+                    <!-- What We Benefits Box End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- What We Do Section End -->
+
+    <!-- Why Choose Us Section Start -->
+    <div class="why-choose-us">
+        <div class="container">
+            <div class="row section-row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Section Title Start -->
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp">why choose us</h3>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">Empowering education through
+                            <span>voice technology</span></h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Section Title Content Start -->
+                    <div class="section-title-content wow fadeInUp" data-wow-delay="0.2s">
+                        <p>We provide Sinhala voice-enabled learning tools to help visually impaired university students
+                            access academic content independently and confidently.</p>
+                    </div>
+                    <!-- Section Title Content End -->
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- Why Choose Content Start -->
+                    <div class="why-choose-content">
+                        <!-- Why Choose Image Start -->
+                        <div class="why-choose-image">
+                            <figure class="image-anime reveal">
+                                <img src="images/why-chose-us-main.jpg" alt="">
+                            </figure>
+                        </div>
+                        <!-- Why Choose Image End -->
+
+                        <!-- Why Choose Item Start -->
+                        <div class="why-choose-item wow fadeInUp">
+                            <div class="icon-box">
+                                <img src="images/obj1.png" alt="">
+                            </div>
+                            <div class="why-choose-item-content">
+                                <h3>Sinhala Voice Control</h3>
+                                <p>Navigate and control your audiobook experience using natural Sinhala voice commands,
+                                    hands-free and hassle-free.</p>
+                            </div>
+                        </div>
+                        <!-- Why Choose Item End -->
+
+                        <!-- Why Choose Item Start -->
+                        <div class="why-choose-item wow fadeInUp" data-wow-delay="0.2s">
+                            <div class="icon-box">
+                                <img src="images/OBJ2.png" alt="">
+                            </div>
+                            <div class="why-choose-item-content">
+                                <h3>Accessible Audiobooks</h3>
+                                <p>Listen to academic content in Sinhala audio format, tailored for the needs of
+                                    visually impaired students across Sri Lanka.</p>
+                            </div>
+                        </div>
+                        <!-- Why Choose Item End -->
+                    </div>
+                    <!-- Why Choose Content End -->
+
+                    <!-- Why Choose Counter Box Start -->
+                    <div class="why-choose-counter-box">
+                        <!-- You can update the counters to reflect project milestones or user stats -->
+                        <div class="why-choose-counter-item">
+                            <div class="icon-box">
+                                <img src="images/icon-why-choose-counter-1.svg" alt="">
+                            </div>
+                            <div class="why-choose-counter-content">
+                                <h3><span class="counter"></span>N</h3>
+                                <p>Tested Users</p>
+                            </div>
+                        </div>
+
+                        <div class="why-choose-counter-item">
+                            <div class="icon-box">
+                                <img src="images/icon-why-choose-counter-2.svg" alt="">
+                            </div>
+                            <div class="why-choose-counter-content">
+                                <h3><span class="counter">4</span></h3>
+                                <p>Core Features</p>
+                            </div>
+                        </div>
+
+                        <div class="why-choose-counter-item">
+                            <div class="icon-box">
+                                <img src="images/icon-why-choose-counter-3.svg" alt="">
+                            </div>
+                            <div class="why-choose-counter-content">
+                                <h3><span class="counter">3</span></h3>
+                                <p>Team Members</p>
+                            </div>
+                        </div>
+
+                        <div class="why-choose-counter-item">
+                            <div class="icon-box">
+                                <img src="images/icon-why-choose-counter-4.svg" alt="">
+                            </div>
+                            <div class="why-choose-counter-content">
+                                <h3><span class="counter">1</span></h3>
+                                <p>Vision for Inclusion</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Why Choose Counter Box End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Why Choose Us Section End -->
+
+
+    <!-- Our Benefits Section Start -->
+    <div class="our-benefits">
+        <div class="container">
+            <div class="row section-row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Section Title Start -->
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp">What We Do</h3>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">Empowering students through
+                            <span>accessible voice technology</span></h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Section Button Start -->
+                    <div class="section-btn wow fadeInUp" data-wow-delay="0.2s">
+                        <a href="#contact" class="btn-default">Contact Now</a>
+                    </div>
+                    <!-- Section Button End -->
+                </div>
+            </div>
+
+            <div class="row align-items-center">
+                <div class="col-lg-3 col-md-6 order-1">
+                    <!-- Our Benefits Box Start -->
+                    <div class="our-benefits-box">
+                        <!-- Benefit Item Start -->
+                        <div class="benefit-item wow fadeInUp" data-wow-delay="0.4s">
+                            <div class="icon-box">
+                                <img src="images/obj1.png" alt="">
+                            </div>
+                            <div class="benefit-item-content">
+                                <h3>Sinhala Voice Control</h3>
+                                <p>Students can navigate, search, and play audiobooks using Sinhala voice commands.</p>
+                            </div>
+                        </div>
+                        <!-- Benefit Item End -->
+
+                        <!-- Benefit Item Start -->
+                        <div class="benefit-item wow fadeInUp" data-wow-delay="0.6s">
+                            <div class="icon-box">
+                                <img src="images/OBJ4.png" alt="">
+                            </div>
+                            <div class="benefit-item-content">
+                                <h3>Smart Audiobook Suggestions</h3>
+                                <p>Get personalized recommendations based on subjects and listening history.</p>
+                            </div>
+                        </div>
+                        <!-- Benefit Item End -->
+                    </div>
+                    <!-- Our Benefits Box End -->
+                </div>
+
+                <div class="col-lg-6 order-lg-2 order-md-3 order-2">
+                    <!-- Our Benefits Image Start -->
+                    <div class="our-benefits-image">
+                        <figure>
+                            <img src="images/benefits-images.png" alt="">
+                        </figure>
+                    </div>
+                    <!-- Our Benefits Image End -->
+                </div>
+
+                <div class="col-lg-3 col-md-6 order-lg-3 order-md-2 order-3">
+                    <!-- Our Benefits Box Start -->
+                    <div class="our-benefits-box">
+                        <!-- Benefit Item Start -->
+                        <div class="benefit-item wow fadeInUp" data-wow-delay="0.4s">
+                            <div class="icon-box">
+                                <img src="images/OBJ2.png" alt="">
+                            </div>
+                            <div class="benefit-item-content">
+                                <h3>Color Overlay Tools</h3>
+                                <p>Custom digital color filters for partially visually impaired users using Ishihara
+                                    test data.</p>
+                            </div>
+                        </div>
+                        <!-- Benefit Item End -->
+
+                        <!-- Benefit Item Start -->
+                        <div class="benefit-item wow fadeInUp" data-wow-delay="0.6s">
+                            <div class="icon-box">
+                                <img src="images/OBJ3.png" alt="">
+                            </div>
+                            <div class="benefit-item-content">
+                                <h3>Biometric Security</h3>
+                                <p>Voice and facial recognition offer secure and easy access to personal content.</p>
+                            </div>
+                        </div>
+                        <!-- Benefit Item End -->
+                    </div>
+                    <!-- Our Benefits Box End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Our Benefits Section End -->
+
+
+    <!-- Intro Video Section Start -->
+    <div class="intro-video">
+        <div class="container-fluid">
+            <div class="row no-gutters">
+                <div class="col-lg-12">
+                    <!-- Intro Video Box Start -->
+                    <div class="intro-video-box">
+                        <div class="intro-bg-video">
+                            <!-- Selfhosted Video Start -->
+                            <video autoplay muted loop id="introVideo">
+                                <source src="images/848740700.mp4" type="video/mp4">
+                            </video>
+                            <!-- Selfhosted Video End -->
+                        </div>
+                        <!-- Video Play Button Start -->
+                        <div class="video-play-button">
+                        </div>
+                        <!-- Video Play Button End -->
+                    </div>
+                    <!-- Intro Video Box End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Intro Video Section End -->
+
+
+    <!-- CTA Box Start -->
+    <div class="cta-box">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-9">
+                    <!-- Section Title Start -->
+                    <div class="section-title">
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">
+                            Enabling visually impaired students to learn with voice-powered audiobooks
+                        </h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+
+                <div class="col-lg-3">
+                    <!-- Section Button Start -->
+                    <div class="section-btn wow fadeInUp">
+                        <a href="#contact" class="btn-default btn-highlighted">Learn More</a>
+                    </div>
+                    <!-- Section Button End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- CTA Box End -->
+
+
+    <!-- How It Work Section Start -->
+    <div class="how-it-work">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <!-- How Work Content Start -->
+                    <div class="how-work-content">
+                        <!-- Section Title Start -->
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp">how it works</h3>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">
+                                Access education with <span>Sinhala voice technology</span>
+                            </h2>
+                        </div>
+                        <!-- Section Title End -->
+
+                        <!-- How Work Steps Box Start -->
+                        <div class="how-work-stpes-box">
+                            <!-- Step 1 -->
+                            <div class="how-work-step wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="how-work-step-no">
+                                    <h2>01</h2>
+                                </div>
+                                <div class="how-work-step-content">
+                                    <h3>Use Voice to Search</h3>
+                                    <p>Just say the book name or subject in Sinhala to instantly find what you need.</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="how-work-step wow fadeInUp" data-wow-delay="0.4s">
+                                <div class="how-work-step-no">
+                                    <h2>02</h2>
+                                </div>
+                                <div class="how-work-step-content">
+                                    <h3>Listen Anytime</h3>
+                                    <p>Play academic audiobooks hands-free, even offline or in low-light environments.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="how-work-step wow fadeInUp" data-wow-delay="0.6s">
+                                <div class="how-work-step-no">
+                                    <h2>03</h2>
+                                </div>
+                                <div class="how-work-step-content">
+                                    <h3>Stay Secure</h3>
+                                    <p>Biometric features ensure secure access with facial or voice authentication.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- How Work Steps Box End -->
+                    </div>
+                    <!-- How Work Content End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- How Work Image Start -->
+                    <div class="how-work-image">
+                        <figure>
+                            <img src="images/how-work-images (1).png" alt="">
+                        </figure>
+                    </div>
+                    <!-- How Work Image End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- How It Work Section End -->
+
+
+    <!-- Our Features Section Start -->
+    <div class="our-features">
+        <div class="container">
+            <div class="row section-row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Section Title Start -->
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp">core features</h3>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">
+                            Innovative tech for <span>inclusive learning</span>
+                        </h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Section Title Content Start -->
+                    <div class="section-title-content wow fadeInUp" data-wow-delay="0.2s">
+                        <p>Explore the smart features that make our system a reliable companion for visually impaired
+                            university students in Sri Lanka.</p>
+                    </div>
+                    <!-- Section Title Content End -->
+                </div>
+            </div>
+
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Features Item Start -->
+                    <div class="features-item wow fadeInUp">
+                        <div class="features-item-content">
+                            <p>Audio Accessibility</p>
+                            <h3>Sinhala Voice-Activated Playback</h3>
+                        </div>
+                        <div class="features-item-image">
+                            <figure>
+                                <img src="images/core features audio.png" alt="">
+                            </figure>
+                        </div>
+                    </div>
+                    <!-- Features Item End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Features Boxes Start -->
+                    <div class="our-features-boxes">
+                        <!-- Box 1 -->
+                        <div class="features-box box-1 wow fadeInUp" data-wow-delay="0.2s">
+                            <div class="features-box-content">
+                                <p>Security</p>
+                                <h3>Biometric Login with Face or Voice</h3>
+                            </div>
+                            <div class="features-box-image">
+                                <figure>
+                                    <img src="images/features-image-2.jpg" alt="">
+                                </figure>
+                            </div>
+                        </div>
+
+                        <!-- Box 2 -->
+                        <div class="features-box box-2 wow fadeInUp" data-wow-delay="0.4s">
+                            <div class="features-box-content">
+                                <p>Vision Support</p>
+                                <h3>Custom Color Filters for Partial Blindness</h3>
+                            </div>
+                            <div class="features-box-image">
+                                <figure>
+                                    <img src="images/features-image-3.jpg" alt="">
+                                </figure>
+                            </div>
+                        </div>
+
+                        <!-- Box 3 -->
+                        <div class="features-item features-box box-3 wow fadeInUp" data-wow-delay="0.6s">
+                            <div class="features-box-content">
+                                <p>Education</p>
+                                <h3>Subject-Based Audiobook Navigation</h3>
+                            </div>
+                            <div class="features-item-image">
+                                <figure>
+                                    <img src="images/features-image-4.png" alt="">
+                                </figure>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Features Boxes End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Our Features Section End -->
+
+
+    <!-- Our Pricing Section Start -->
+    <div class="our-pricing">
+        <div class="container">
+            <div class="row section-row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Section Title Start -->
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp">subscription plans</h3>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">Flexible pricing for
+                            <span>audio learning</span></h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Section Title Content Start -->
+                    <div class="section-title-content wow fadeInUp" data-wow-delay="0.2s">
+                        <p>Choose a plan that fits your learning style. Our audiobook platform is designed for visually
+                            impaired university students in Sri Lanka, offering Sinhala voice support and easy
+                            navigation.</p>
+                    </div>
+                    <!-- Section Title Content End -->
+                </div>
+            </div>
+
+            <div class="row align-items-center">
+                <div class="col-lg-4 col-md-6">
+                    <!-- Pricing Item Start -->
+                    <div class="pricing-item wow fadeInUp">
+                        <div class="pricing-image">
+                            <figure class="image-anime">
+                                <img src="images/pricing-image-1.jpg" alt="">
+                            </figure>
+                        </div>
+
+                        <div class="pricing-content">
+                            <div class="pricing-title">
+                                <h3>Basic Access</h3>
+                            </div>
+                            <h2>Free</h2>
+                            <p>Limited Access</p>
+                        </div>
+
+                        <div class="pricing-body">
+                            <div class="pricing-list">
+                                <ul>
+                                    <li>Access to selected textbooks</li>
+                                    <li>Text-to-speech functionality</li>
+                                    <li>Daily listening limit</li>
+                                    <li>Community forum access</li>
+                                </ul>
+                            </div>
+                            <div class="pricing-btn">
+                                <a href="contact.html" class="btn-default">get started</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pricing Item End -->
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <!-- Pricing Item Start -->
+                    <div class="pricing-item highlighted-box wow fadeInUp" data-wow-delay="0.2s">
+                        <div class="pricing-image">
+                            <figure class="image-anime">
+                                <img src="images/pricing-image-2.jpg" alt="">
+                            </figure>
+                        </div>
+
+                        <div class="pricing-content">
+                            <div class="pricing-title">
+                                <h3>Student Plan</h3>
+                            </div>
+                            <h2>Rs. 499</h2>
+                            <p>per month</p>
+                        </div>
+
+                        <div class="pricing-body">
+                            <div class="pricing-list">
+                                <ul>
+                                    <li>Unlimited audio access</li>
+                                    <li>Interactive voice navigation</li>
+                                    <li>Download for offline use</li>
+                                    <li>Sinhala voice assistant</li>
+                                </ul>
+                            </div>
+                            <div class="pricing-btn">
+                                <a href="contact.html" class="btn-default btn-highlighted">subscribe now</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pricing Item End -->
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <!-- Pricing Item Start -->
+                    <div class="pricing-item wow fadeInUp" data-wow-delay="0.4s">
+                        <div class="pricing-image">
+                            <figure class="image-anime">
+                                <img src="images/pricing-image-3.jpg" alt="">
+                            </figure>
+                        </div>
+
+                        <div class="pricing-content">
+                            <div class="pricing-title">
+                                <h3>Institutional Plan</h3>
+                            </div>
+                            <h2>Rs. 3999</h2>
+                            <p>per year</p>
+                        </div>
+
+                        <div class="pricing-body">
+                            <div class="pricing-list">
+                                <ul>
+                                    <li>Multi-user campus access</li>
+                                    <li>Custom content uploads</li>
+                                    <li>Admin dashboard & analytics</li>
+                                    <li>Priority support</li>
+                                </ul>
+                            </div>
+                            <div class="pricing-btn">
+                                <a href="contact.html" class="btn-default">enroll now</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pricing Item End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Our Pricing Section End -->
+
+
+    <!-- Scrolling Ticker Start -->
+    <div class="scrolling-ticker">
+        <!-- Scrolling Ticker Box Start -->
+        <div class="scrolling-ticker-box">
+            <!-- Scrolling Content Start -->
+            <div class="scrolling-content">
+                <span><img src="images/icon-asterisk.svg" alt="">Audio Learning: Sinhala Textbooks</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Accessible Text-to-Speech Narration</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Interactive Audio Navigation</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Audio-Based Study Materials</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Streamlined Learning Experience</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Audio Learning: Sinhala Textbooks</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Accessible Text-to-Speech Narration</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Interactive Audio Navigation</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Audio-Based Study Materials</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Streamlined Learning Experience</span>
+            </div>
+            <!-- Scrolling Content End -->
+
+            <!-- Scrolling Content Start -->
+            <div class="scrolling-content">
+                <span><img src="images/icon-asterisk.svg" alt="">Audio Learning: Sinhala Textbooks</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Accessible Text-to-Speech Narration</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Interactive Audio Navigation</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Audio-Based Study Materials</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Streamlined Learning Experience</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Audio Learning: Sinhala Textbooks</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Accessible Text-to-Speech Narration</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Interactive Audio Navigation</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Audio-Based Study Materials</span>
+                <span><img src="images/icon-asterisk.svg" alt="">Streamlined Learning Experience</span>
+            </div>
+            <!-- Scrolling Content End -->
+        </div>
+        <!-- Scrolling Ticker Box End -->
+    </div>
+    <!-- Scrolling Ticker End -->
+
+
+
+    <!-- Scrolling Ticker End -->
+
+    <!-- Our Testimonials Section Start -->
+    <div class="our-testimonials">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Testimonial Image Content Start -->
+                    <div class="testimonial-image-content">
+                        <!-- Testimonial Image Start -->
+                        <div class="testimonial-image">
+                            <figure class="image-anime reveal">
+                                <img src="images/ws/istockphoto-1368085024-612x612.jpg" alt="">
+                            </figure>
+                        </div>
+                        <!-- Testimonial Image End -->
+
+                        <!-- Testimonial Review Box Start -->
+                        <div class="testimonial-review-box wow fadeInUp">
+                            <div class="testimonial-review-header">
+                                <div class="testimonial-review-title">
+                                    <h3>Try a Free Audio Lesson Today!</h3>
+                                </div>
+                                <div class="testimonial-review-counter">
+                                    <span>30K+</span>
+                                    <p> Benefited</p>
+                                </div>
+                            </div>
+                            <div class="testimonial-review-body">
+                                <div class="testimonial-review-content">
+                                    <p>Experience the convenience of audio learning with a free trial. Our accessible,
+                                        text-to-speech narrations of textbooks help visually impaired students enhance
+                                        their learning experience.</p>
+                                </div>
+                                <div class="testimonial-review-btn">
+                                    <a href="contact.html"><img src="images/arrow-white.svg" alt=""></a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Testimonial Review Box End -->
+                    </div>
+                    <!-- Testimonial Image Content End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Our Testimonial Content Start -->
+                    <div class="our-testimonial-content">
+                        <!-- Section Title Start -->
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp">testimonials</h3>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Real Stories of Transformation
+                                <span>and Growth</span></h2>
+                        </div>
+                        <!-- Section Title End -->
+
+                        <div class="our-testimonial-box">
+                            <!-- Testimonial Item Start -->
+                            <div class="testimonial-item wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="testimonial-author">
+                                    <div class="author-image">
+                                        <figure class="image-anime">
+                                            <img src="images/scrolling-ticker-image-1.jpg" alt="">
+                                        </figure>
+                                    </div>
+                                    <div class="author-content">
+                                        <h3>Ravi Perera</h3>
+                                        <p>Student & Advocate for Visually Impaired Education</p>
+                                    </div>
+                                </div>
+                                <div class="testimonial-item-content">
+                                    <p>"Using the audiobook system for my studies has been a game-changer. The
+                                        text-to-speech narration has helped me understand complex subjects like never
+                                        before. This technology is essential for my academic success."</p>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                            <!-- Testimonial Item End -->
+
+                            <!-- Testimonial Item Start -->
+                            <div class="testimonial-item wow fadeInUp" data-wow-delay="0.4s">
+                                <div class="testimonial-author">
+                                    <div class="author-image">
+                                        <figure class="image-anime">
+                                            <img src="images/scrolling-ticker-image-2.jpg" alt="">
+                                        </figure>
+                                    </div>
+                                    <div class="author-content">
+                                        <h3>Manjula Jayasinghe</h3>
+                                        <p>Educator & Supporter of Accessible Learning</p>
+                                    </div>
+                                </div>
+                                <div class="testimonial-item-content">
+                                    <p>"As an educator working with visually impaired students, I am thrilled to see
+                                        such innovative technology. The audio learning system provides students with
+                                        independence and access to crucial educational materials."</p>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                            <!-- Testimonial Item End -->
+                        </div>
+                    </div>
+                    <!-- Our Testimonial Content End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Our Testimonial Section End -->
+
+
+    <!-- Our Faqs Section Start -->
+    <div class="our-faqs">
+        <div class="container">
+            <div class="row section-row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Section Title Start -->
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp">FAQs</h3>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">Answers to common audiobook
+                            <span>and accessibility questions</span></h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Section Button Start -->
+                    <div class="section-btn wow fadeInUp" data-wow-delay="0.2s">
+                        <a href="faqs.html" class="btn-default">view all faqs</a>
+                    </div>
+                    <!-- Section Button End -->
+                </div>
+            </div>
+
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Our FAQs Content Start -->
+                    <div class="our-faqs-content">
+                        <!-- FAQ Accordion Start -->
+                        <div class="faq-accordion" id="accordion">
+                            <!-- FAQ Item Start -->
+                            <div class="accordion-item wow fadeInUp">
+                                <h2 class="accordion-header" id="heading1">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                                    What is the audiobook system, and how can it help visually impaired students?
+                                </button>
+                                </h2>
+                                <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="heading1"
+                                    data-bs-parent="#accordion">
+                                    <div class="accordion-body">
+                                        <p>Our audiobook system reads aloud textbooks and study materials, making
+                                            learning more accessible to visually impaired students. It offers a
+                                            convenient way for students to access their academic resources
+                                            independently.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- FAQ Item End -->
+
+                            <!-- FAQ Item Start -->
+                            <div class="accordion-item wow fadeInUp" data-wow-delay="0.2s">
+                                <h2 class="accordion-header" id="heading2">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                    Do I need any special software or devices to use the audiobook system?
+                                </button>
+                                </h2>
+                                <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2"
+                                    data-bs-parent="#accordion">
+                                    <div class="accordion-body">
+                                        <p>No, the audiobook system works on most devices with text-to-speech support,
+                                            such as smartphones, tablets, and computers. It’s user-friendly and doesn’t
+                                            require any special tools.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- FAQ Item End -->
+
+                            <!-- FAQ Item Start -->
+                            <div class="accordion-item wow fadeInUp" data-wow-delay="0.4s">
+                                <h2 class="accordion-header" id="heading3">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                    Can I use the audiobook system for all subjects?
+                                </button>
+                                </h2>
+                                <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="heading3"
+                                    data-bs-parent="#accordion">
+                                    <div class="accordion-body">
+                                        <p>Yes, the audiobook system supports a wide range of subjects, including
+                                            textbooks, reference materials, and even supplementary resources like
+                                            research papers.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- FAQ Item End -->
+
+                            <!-- FAQ Item Start -->
+                            <div class="accordion-item wow fadeInUp" data-wow-delay="0.6s">
+                                <h2 class="accordion-header" id="heading4">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                    How do I get started with the audiobook system?
+                                </button>
+                                </h2>
+                                <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="heading4"
+                                    data-bs-parent="#accordion">
+                                    <div class="accordion-body">
+                                        <p>To get started, simply register for a free trial and access the audiobook
+                                            system. You'll be able to explore the features and see how it enhances your
+                                            learning experience.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- FAQ Item End -->
+
+                            <!-- FAQ Item Start -->
+                            <div class="accordion-item wow fadeInUp" data-wow-delay="0.8s">
+                                <h2 class="accordion-header" id="heading5">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                    What if I encounter technical issues while using the audiobook system?
+                                </button>
+                                </h2>
+                                <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="heading5"
+                                    data-bs-parent="#accordion">
+                                    <div class="accordion-body">
+                                        <p>If you encounter any issues, our support team is available to assist you. We
+                                            offer 24/7 support to ensure that your learning experience remains
+                                            uninterrupted.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- FAQ Item End -->
+                        </div>
+                        <!-- FAQ Accordion End -->
+                    </div>
+                    <!-- Our FAQs Content End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Faqs Image Start -->
+                    <div class="faqs-image">
+                        <figure class="image-anime reveal">
+                            <img src="images/faqs-image.jpg" alt="">
+                        </figure>
+
+                        <!-- Faqs Contact Box Start -->
+                        <div class="faqs-contact-box">
+                            <div class="icon-box">
+                                <i class="fa-solid fa-phone-volume"></i>
+                            </div>
+                            <div class="faqs-contact-box-content">
+                                <h3>Still have questions?</h3>
+                                <p><a href="0761852398.html">+94 70 556 6003</a></p>
+                            </div>
+                        </div>
+                        <!-- Faqs Contact Box End -->
+                    </div>
+                    <!-- Faqs Image End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Our Faqs Section End -->
+
+
+    <!-- Our Blog Section Start -->
+    <div class="our-blog">
+        <div class="container">
+            <div class="row section-row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Section Title Start -->
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp">Latest blog</h3>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque">Explore our latest
+                            <span>audiobook insights</span></h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Section Title Content Start -->
+                    <div class="section-btn wow fadeInUp" data-wow-delay="0.2s">
+                        <a href="blog.html" class="btn-default">View all posts</a>
+                    </div>
+                    <!-- Section Title Content End -->
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <!-- Post Item Start -->
+                    <div class="post-item wow fadeInUp">
+                        <!-- Post Featured Image Start-->
+                        <div class="post-featured-image">
+                            <a href="blog-single.html" data-cursor-text="View">
+                                <figure class="image-anime">
+                                    <img src="images/post-1.jpg" alt="">
+                                </figure>
+                            </a>
+                        </div>
+                        <!-- Post Featured Image End -->
+
+                        <!-- Post Item Body Start -->
+                        <div class="post-item-body">
+                            <!-- Post Item Content Start -->
+                            <div class="post-item-content">
+                                <h2><a href="blog-single.html">How Audiobooks are Transforming Education for Visually
+                                        Impaired Students</a></h2>
+                            </div>
+                            <!-- Post Item Content End -->
+
+                            <!-- Post Item Readmore Button Start-->
+                            <div class="post-item-btn">
+                                <a href="blog-single.html" class="readmore-btn">read more</a>
+                            </div>
+                            <!-- Post Item Readmore Button End-->
+                        </div>
+                        <!-- Post Item Body End -->
+                    </div>
+                    <!-- Post Item End -->
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <!-- Post Item Start -->
+                    <div class="post-item wow fadeInUp" data-wow-delay="0.2s">
+                        <!-- Post Featured Image Start-->
+                        <div class="post-featured-image">
+                            <a href="blog-single.html" data-cursor-text="View">
+                                <figure class="image-anime">
+                                    <img src="images/post-2.jpg" alt="">
+                                </figure>
+                            </a>
+                        </div>
+                        <!-- Post Featured Image End -->
+
+                        <!-- Post Item Body Start -->
+                        <div class="post-item-body">
+                            <!-- Post Item Content Start -->
+                            <div class="post-item-content">
+                                <h2><a href="blog-single.html">Creating Inclusive Learning Environments with
+                                        Audiobooks</a></h2>
+                            </div>
+                            <!-- Post Item Content End -->
+
+                            <!-- Post Item Readmore Button Start-->
+                            <div class="post-item-btn">
+                                <a href="blog-single.html" class="readmore-btn">read more</a>
+                            </div>
+                            <!-- Post Item Readmore Button End-->
+                        </div>
+                        <!-- Post Item Body End -->
+                    </div>
+                    <!-- Post Item End -->
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <!-- Post Item Start -->
+                    <div class="post-item wow fadeInUp" data-wow-delay="0.4s">
+                        <!-- Post Featured Image Start-->
+                        <div class="post-featured-image">
+                            <a href="blog-single.html" data-cursor-text="View">
+                                <figure class="image-anime">
+                                    <img src="images/post-3.jpg" alt="">
+                                </figure>
+                            </a>
+                        </div>
+                        <!-- Post Featured Image End -->
+
+                        <!-- Post Item Body Start -->
+                        <div class="post-item-body">
+                            <!-- Post Item Content Start -->
+                            <div class="post-item-content">
+                                <h2><a href="blog-single.html">Best Practices for Integrating Audiobooks into
+                                        Education</a></h2>
+                            </div>
+                            <!-- Post Item Content End -->
+
+                            <!-- Post Item Readmore Button Start-->
+                            <div class="post-item-btn">
+                                <a href="blog-single.html" class="readmore-btn">read more</a>
+                            </div>
+                            <!-- Post Item Readmore Button End-->
+                        </div>
+                        <!-- Post Item Body End -->
+                    </div>
+                    <!-- Post Item End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Our Blog Section End -->
+
+
+    <!-- Footer Main Start -->
+    <footer class="footer-main">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- Footer Header Start -->
+                    <div class="footer-header">
+                        <!-- Footer About Start -->
+                        <div class="footer-about">
+                            <div class="footer-logo">
+                                <img src="images/logo1.png" alt="Footer Logo">
+                            </div>
+                            <div class="about-footer-content">
+                                <p>Empowering visually impaired students with accessible audiobooks for enhanced
+                                    learning.</p>
+                            </div>
+                        </div>
+                        <!-- Footer About End -->
+
+                        <!-- Footer Social Links Start -->
+                        <div class="footer-social-links">
+                            <ul>
+                                <li><a href="#"><i class="fa-brands fa-pinterest-p"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
+                            </ul>
+                        </div>
+                        <!-- Footer Social Links End -->
+                    </div>
+                    <!-- Footer Header End -->
+                </div>
+
+                <div class="col-lg-2 col-md-3">
+                    <!-- Footer Links Start -->
+                    <div class="footer-links">
+                        <h3>Quick Links</h3>
+                        <ul>
+                            <li><a href="index-2.html">Home</a></li>
+                            <li><a href="about.html">About Us</a></li>
+                            <li><a href="catergories.html">Library</a></li>
+                            <li><a href="blog.html">Books</a></li>
+                        </ul>
+                    </div>
+                    <!-- Footer Links End -->
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <!-- Footer Links Start -->
+                    <div class="footer-links">
+                        <h3>Services</h3>
+                        <ul>
+                            <li><a href="service-single.html">Audiobook Creation</a></li>
+                            <li><a href="service-single.html">Learning Resources</a></li>
+                            <li><a href="service-single.html">Narration Services</a></li>
+                            <li><a href="service-single.html">Educational Tools</a></li>
+                        </ul>
+                    </div>
+                    <!-- Footer Links End -->
+                </div>
+
+                <div class="col-lg-3 col-md-5">
+                    <!-- Footer Contact Links Start -->
+                    <div class="footer-links footer-contact-links">
+                        <h3>Contact</h3>
+                        <ul>
+                            <li><a href="tel:761852398">+94 70 556 6003 </a></li>
+                            <li><a href="mailto:info@domainname.com">info@voiceaccess.com</a></li>
+                            <li>SLTC Padukka</li>
+                        </ul>
+                    </div>
+                    <!-- Footer Contact Links End -->
+                </div>
+
+                <div class="col-lg-5">
+                    <!-- Footer Newsletter Box Start -->
+                    <div class="footer-newsletter-box">
+                        <!-- Footer Newsletter Title Start -->
+                        <div class="section-title">
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Subscribe for Audiobook Updates and
+                                Educational Resources</h2>
+                        </div>
+                        <!-- Footer Newsletter Title End -->
+
+                        <!-- Newsletter Form Start -->
+                        <div class="newsletter-form">
+                            <form id="newsletterForm" action="#" method="POST">
+                                <div class="form-group">
+                                    <input type="email" name="email" class="form-control" id="mail" placeholder="Enter Your Email" required>
+                                    <button type="submit" class="newsletter-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- Newsletter Form End -->
+                    </div>
+                    <!-- Footer Newsletter Box End -->
+                </div>
+
+                <div class="col-lg-12">
+                    <!-- Footer Copyright Section Start -->
+                    <div class="footer-copyright">
+                        <!-- Footer Copyright Text Start -->
+                        <div class="footer-copyright-text">
+                            <p>Copyright © 2025 All Rights Reserved.</p>
+                        </div>
+                        <!-- Footer Copyright Text End -->
+
+                        <!-- Footer Privacy Policy Start -->
+                        <div class="footer-privacy-policy">
+                            <ul>
+                                <li><a href="#">Privacy Policy</a></li>
+                                <li><a href="#">Terms & Conditions</a></li>
+                                <li><a href="#">Help</a></li>
+                            </ul>
+                        </div>
+                        <!-- Footer Privacy Policy End -->
+                    </div>
+                    <!-- Footer Copyright Section End -->
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer Main End -->
+
+    <!-- Jquery Library File -->
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap js file -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Validator js file -->
+    <script src="js/validator.min.js"></script>
+    <!-- SlickNav js file -->
+    <script src="js/jquery.slicknav.js"></script>
+    <!-- Swiper js file -->
+    <script src="js/swiper-bundle.min.js"></script>
+    <!-- Counter js file -->
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/jquery.counterup.min.js"></script>
+    <!-- Magnific js file -->
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <!-- SmoothScroll -->
+    <script src="js/SmoothScroll.js"></script>
+    <!-- Parallax js -->
+    <script src="js/parallaxie.js"></script>
+    <!-- MagicCursor js file -->
+    <script src="js/gsap.min.js"></script>
+    <script src="js/magiccursor.js"></script>
+    <!-- Text Effect js file -->
+    <script src="js/SplitText.js"></script>
+    <script src="js/ScrollTrigger.min.js"></script>
+    <!-- YTPlayer js File -->
+    <script src="js/jquery.mb.YTPlayer.min.js"></script>
+    <!-- Wow js file -->
+    <script src="js/wow.min.js"></script>
+    <!-- Main Custom js file -->
+    <script src="js/function.js"></script>
+
+    <div class="start-overlay" id="blindStartOverlay">
+        <div
+            style="border: 3px solid #00f260; padding: 30px; border-radius: 50%; margin-bottom: 20px; animation: pulse 2s infinite;">
+            <i class="fa-solid fa-power-off" style="font-size: 50px; color: #00f260;"></i>
+        </div>
+        <h1>Tap Screen to Activate</h1>
+        <p style="color: #888; margin-top: 10px;">AI Voice Assistant</p>
+    </div>
+    
+    <video id="aiVideoSource" playsinline></video>
+    
+    <div class="agent-widget" id="agentWidget">
+    
+        <div class="visual-area">
+            <div class="robot-avatar" id="robotIcon">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <canvas id="gestureCanvas"></canvas>
+        </div>
+    
+        <div class="info-area">
+            <span class="status-badge" id="statusBadge">SYSTEM IDLE</span>
+            <h5 id="agentTitle">Assistant</h5>
+            <p id="agentText">Waiting for user...</p>
+        </div>
+    </div>
+    
+    <script>
+        $(document).ready(function() {
+                // මූලික සැකසුම්
+                const overlay = $('#blindStartOverlay');
+                const widget = $('#agentWidget');
+                const videoElement = document.getElementById('aiVideoSource');
+                const canvasElement = document.getElementById('gestureCanvas');
+                const canvasCtx = canvasElement.getContext('2d');
+                const robotIcon = $('#robotIcon');
+                
+                // State Machine (පියවර පාලනය කිරීම)
+                // States: WAITING_TOUCH -> LISTENING_CMD -> VERIFY_2 -> VERIFY_3 -> REDIRECTING
+                let state = "WAITING_TOUCH"; 
+                let lastSpokenTime = 0;
+    
+                // 1. පටන් ගැනීම (Touch to Start)
+                overlay.click(function() {
+                    overlay.fadeOut();
+                    widget.css("display", "flex");
+                    initAI();
+                });
+    
+                function initAI() {
+                    updateUI("Initializing", "Starting Camera...", "LOADING");
+                    speak("Welcome back. I am starting the system.", () => {
+                        startCamera();
+                    });
+                }
+    
+                function startCamera() {
+                    const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+                    
+                    hands.setOptions({
+                        maxNumHands: 1,
+                        modelComplexity: 1,
+                        minDetectionConfidence: 0.6, // 
+                        minTrackingConfidence: 0.5
+                    });
+    
+                    hands.onResults(onResults);
+    
+                    const camera = new Camera(videoElement, {
+                        onFrame: async () => { await hands.send({image: videoElement}); },
+                        width: 640, height: 480
+                    });
+                    camera.start();
+    
+                    // උපදෙස් දීම
+                    setTimeout(() => {
+                        state = "LISTENING_CMD";
+                        updateUI("Listening...", "Show 2 (Library) or 3 (Books)", "READY");
+                        speak("System Ready. Show two fingers for Library. Show three fingers for Books.");
+                    }, 4000);
+                }
+    
+                // --- Gesture Processing (Logic) ---
+                function onResults(results) {
+                    // Canvas එක Clear කිරීම සහ සකස් කිරීම
+                    canvasElement.width = videoElement.videoWidth;
+                    canvasElement.height = videoElement.videoHeight;
+                    canvasCtx.save();
+                    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    
+                    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                        // අතක් පෙනුනොත් Robot හැංගිලා ඇටසැකිල්ල පෙන්වනවා
+                        robotIcon.hide();
+                        $(canvasElement).show();
+    
+                        const lm = results.multiHandLandmarks[0];
+    
+                        // ඇටසැකිල්ල ඇඳීම
+                        drawConnectors(canvasCtx, lm, HAND_CONNECTIONS, {color: '#00f260', lineWidth: 3});
+                        drawLandmarks(canvasCtx, lm, {color: '#ff0000', lineWidth: 1});
+    
+                        // ඇඟිලි ගැනීමේ Logic එක
+                        checkGestures(lm);
+    
+                    } else {
+                        // අතක් නැතිනම් Robot පෙන්වනවා
+                        $(canvasElement).hide();
+                        robotIcon.show();
+                    }
+                    canvasCtx.restore();
+                }
+    
+                function checkGestures(lm) {
+                    // ඇඟිලි කෙලින්ද (Up) නැවිලද (Down) බැලීම
+                    const indexUp = lm[8].y < lm[6].y;
+                    const middleUp = lm[12].y < lm[10].y;
+                    const ringUp = lm[16].y < lm[14].y;
+                    const pinkyUp = lm[20].y < lm[18].y;
+                    
+                    // Thumbs Up/Down Logic (සරලව X සහ Y අක්ෂ පරීක්ෂාව)
+                    const thumbTipY = lm[4].y;
+                    const thumbKnuckleY = lm[3].y;
+                    const isThumbUp = thumbTipY < thumbKnuckleY; 
+                    const isThumbDown = thumbTipY > thumbKnuckleY;
+    
+                    // තත්පර 3ක විරාමයක් (එක දිගට කතා නොකරන්න)
+                    const now = new Date().getTime();
+                    if (now - lastSpokenTime < 3500) return;
+    
+                    // ==================================================
+                    // STEP 1: ප්‍රධාන මෙනුව (2 ද? 3 ද? කියලා බලනවා)
+                    // ==================================================
+                    if (state === "LISTENING_CMD") {
+                        
+                        // --- 2 Fingers (Library) ---
+                        if (indexUp && middleUp && !ringUp && !pinkyUp) {
+                            state = "VERIFY_2"; // ඊළඟ පියවරට
+                            lastSpokenTime = now;
+                            updateUI("Confirm?", "Did you show 2 fingers?", "WAITING");
+                            speak("Did you show two fingers? Show Thumbs Up for Yes, Thumbs Down for No.");
+                        }
+                        
+                        // --- 3 Fingers (Books) ---
+                        else if (indexUp && middleUp && ringUp && !pinkyUp) {
+                            state = "VERIFY_3"; // ඊළඟ පියවරට
+                            lastSpokenTime = now;
+                            updateUI("Confirm?", "Did you show 3 fingers?", "WAITING");
+                            speak("Did you show three fingers? Show Thumbs Up for Yes, Thumbs Down for No.");
+                        }
+                    }
+    
+                    // ==================================================
+                    // STEP 2: තහවුරු කිරීම (ඇඟිලි 2 සඳහා) -> Library
+                    // ==================================================
+                    else if (state === "VERIFY_2") {
+                        
+                        // YES (Thumbs Up) -> Library එකට යනවා
+                        if (isThumbUp && !indexUp && !middleUp && !ringUp && !pinkyUp) {
+                            state = "REDIRECTING";
+                            lastSpokenTime = now;
+                            updateUI("Success", "Opening Library...", "SUCCESS");
+                            speak("Okay. Opening the Library.", () => {
+                                window.location.href = "catergories-voice.html";
+                            });
+                        }
+                        
+                        // NO (Thumbs Down) -> ආයේ මුලට
+                        else if (isThumbDown && !indexUp && !middleUp && !ringUp && !pinkyUp) {
+                            state = "LISTENING_CMD";
+                            lastSpokenTime = now;
+                            updateUI("Retry", "Show 2 or 3 Fingers", "IDLE");
+                            speak("Okay. What do you want to do? Show two for Library, or three for Books.");
+                        }
+                    }
+    
+                    // ==================================================
+                    // STEP 3: තහවුරු කිරීම (ඇඟිලි 3 සඳහා) -> Books
+                    // ==================================================
+                    else if (state === "VERIFY_3") {
+                        
+                        // YES (Thumbs Up) -> Books Page එකට යනවා
+                        if (isThumbUp && !indexUp && !middleUp && !ringUp && !pinkyUp) {
+                            state = "REDIRECTING";
+                            lastSpokenTime = now;
+                            updateUI("Success", "Opening Books Page...", "SUCCESS");
+                            speak("Okay. Opening the Books Page.", () => {
+                                window.location.href = "books-voice.html";
+                            });
+                        }
+                        
+                        // NO (Thumbs Down) -> ආයේ මුලට
+                        else if (isThumbDown && !indexUp && !middleUp && !ringUp && !pinkyUp) {
+                            state = "LISTENING_CMD";
+                            lastSpokenTime = now;
+                            updateUI("Retry", "Show 2 or 3 Fingers", "IDLE");
+                            speak("Okay. Let's try again. Show two fingers or three fingers.");
+                        }
+                    }
+                }
+    
+                // UI එක Update කරන Function එක
+                function updateUI(title, text, badge) {
+                    $('#agentTitle').text(title);
+                    $('#agentText').text(text);
+                    $('#statusBadge').text(badge);
+                    
+                    if (badge === "SUCCESS") $('#statusBadge').css('background', '#00f260');
+                    else if (badge === "WAITING") $('#statusBadge').css('background', '#ffc107');
+                    else $('#statusBadge').css('background', '#333');
+                }
+    
+                // කතා කරන Function එක
+                function speak(text, callback) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    robotIcon.addClass('speaking');
+                    utterance.onend = function() {
+                        robotIcon.removeClass('speaking');
+                        if (callback) callback();
+                    };
+                    window.speechSynthesis.speak(utterance);
+                }
+            });
+    </script>
+</body>
+
+</html>

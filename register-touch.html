@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - VoiceAccess</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Sora:wght@100..800&display=swap"
+        rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/all.min.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+
+    <style>
+        /* Custom Style for Small Status Message */
+        .small-status-msg {
+            font-size: 13px;
+            /* <--- Text is now small */
+            font-weight: 600;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+            /* Hidden by default */
+            letter-spacing: 0.5px;
+        }
+
+        .msg-success {
+            color: #00f260;
+        }
+
+        .msg-error {
+            color: #ff4444;
+        }
+
+        .msg-loading {
+            color: #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <div class="page-contact-us">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="contact-us-content">
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp">Sign Up</h3>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Start your <span>Journey</span></h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.2s">Create a standard account using your name and
+                                password.</p>
+
+
+                        </div>
+                        <div class="contact-info-list">
+                            <div class="contact-info-item wow fadeInUp">
+                                <div class="icon-box"><img src="images/icon-phone.svg" alt=""></div>
+                                <div class="contact-item-content">
+                                    <h3>need help?</h3>
+                                    <p><a href="tel:+94705566003">+94 70 556 6003</a></p>
+                                </div>
+                            </div>
+
+                            <div class="contact-info-item wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="icon-box"><img src="images/icon-mail.svg" alt=""></div>
+                                <div class="contact-item-content">
+                                    <h3>support email</h3>
+                                    <p style="font-size: 90%;"><a href="mailto:support@vacc.com">support@vacc.com</a>
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="mt-3">If you don't have an account, please register first to enjoy full access to
+                                our audio library.</p>
+                            <p class="mt-2">Already registered? <a
+                                    href="login.html"><strong style="color: #333; text-decoration: underline;">Login here</strong></a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="contact-us-form">
+                        <div class="section-title">
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">Register <span>Now</span></h2>
+                        </div>
+
+                        <div class="contact-form">
+                            <form id="registerForm" onsubmit="return handleRegister(event)">
+                                <div class="row">
+                                    <div class="form-group col-md-12 mb-4">
+                                        <input type="text" name="fullname" class="form-control" id="fullname" placeholder="Full Name (Username)" required>
+                                    </div>
+                                    <div class="form-group col-md-12 mb-4">
+                                        <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                                    </div>
+                                    <div class="form-group col-md-12 mb-5">
+                                        <input type="password" name="confirm_password" class="form-control" id="confirm_password" placeholder="Confirm Password" required>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn-default">Create Account</button>
+
+                                        <div id="msgSubmit" class="small-status-msg"></div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Our Services Section Start -->
+    <div class="our-services" style="margin-top: -12%; "></div>
+
+
+
+    <!-- Section Footer Text Start -->
+    <div class="section-footer-text wow fadeInUp" data-wow-delay="0.2s">
+        <p><span>Explore</span>Discover how our features can transform learning. <a href="contact.html">Contact Us</a>
+        </p>
+    </div>
+    <!-- Section Footer Text End -->
+    </div>
+    </div>
+    </div>
+    </div>
+    <!-- Our Services Section End -->
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.slicknav.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/parallaxie.js"></script>
+    <script src="js/function.js"></script>
+    
+    <script>
+        function handleRegister(e) {
+            e.preventDefault();
+            
+            const fullname = document.getElementById('fullname').value;
+            const pass = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const msg = document.getElementById('msgSubmit');
+            
+            // Test එකෙන් ආපු Result එක ගන්නවා (නැත්නම් 'normal' කියලා ගන්නවා)
+            const visionType = sessionStorage.getItem("tempVisionType") || "normal";
+            
+            if(pass !== confirm) {
+                msg.innerText = "Passwords do not match!";
+                msg.className = "small-status-msg msg-error";
+                msg.style.display = "block";
+                return false;
+            }
+    
+            const formData = new FormData();
+            formData.append('fullname', fullname);
+            formData.append('password', pass);
+            formData.append('vision_type', visionType); // DB එකට යවනවා
+    
+            msg.innerText = "Creating Account...";
+            msg.className = "small-status-msg msg-loading";
+            msg.style.display = "block";
+    
+            fetch('api.php?action=register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success") {
+                    msg.innerText = "Success! Redirecting...";
+                    msg.className = "small-status-msg msg-success";
+                    // Register වුනාට පස්සේ තාවකාලික data මකලා දානවා
+                    sessionStorage.removeItem("tempVisionType");
+                    
+                    setTimeout(() => { window.location.href = "login.html"; }, 1500);
+                } else {
+                    msg.innerText = "Error: " + data.message;
+                    msg.className = "small-status-msg msg-error";
+                }
+            });
+        }
+    </script>
+    </body>
+    
+   
+
+</html>

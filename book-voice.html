@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>මල් කිණිත්තක පුරාවෘත්තය (Forget Me not)</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&amp;family=Sora:wght@100..800&amp;display=swap"
+        rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/slicknav.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/swiper-bundle.min.css">
+    <link href="css/all.min.css" rel="stylesheet" media="screen">
+    <link href="css/animate.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <link rel="stylesheet" href="css/mousecursor.css">
+    <link href="css/custom.css" rel="stylesheet" media="screen">
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* --- Widget Styles --- */
+        .start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: white;
+            text-align: center;
+        }
+
+        .agent-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 320px;
+            height: 420px;
+            background: rgba(25, 25, 25, 0.95);
+            border: 2px solid #444;
+            border-radius: 25px;
+            display: none;
+            flex-direction: column;
+            z-index: 9998;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .visual-area {
+            flex: 1;
+            position: relative;
+            background: #111;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .robot-avatar {
+            font-size: 80px;
+            color: #555;
+            transition: all 0.3s;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 100, 0.2));
+        }
+
+        .robot-avatar.speaking {
+            animation: pulse-speak 1s infinite;
+            color: #00f260;
+        }
+
+        @keyframes pulse-speak {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #gestureCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            transform: scaleX(-1);
+        }
+
+        .info-area {
+            height: 110px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #1a1a1a;
+        }
+
+        .info-area h5 {
+            color: #fff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+
+        .info-area p {
+            color: #aaa;
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            background: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            width: fit-content;
+        }
+
+        #aiVideoSource {
+            position: fixed;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- POPUP STYLES --- */
+        #nextBookPopup {
+            position: fixed;
+            right: -450px;
+            bottom: 460px;
+            width: 320px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            z-index: 9999;
+            font-family: 'Sora', sans-serif;
+            transition: right 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            overflow: hidden;
+        }
+
+        #nextBookPopup.active {
+            right: 30px;
+        }
+
+        .next-book-details {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .book-thumb {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .book-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .soon-badge {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            background: #FF3B30;
+            color: #fff;
+            font-size: 8px;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .book-info h4 {
+            font-size: 14px;
+            margin: 0 0 2px;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .book-info p {
+            font-size: 11px;
+            margin: 0;
+            color: #666;
+        }
+
+        .popup-desc {
+            font-size: 12px;
+            color: #444;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .gesture-hint-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+        }
+
+        .gesture-hint {
+            background: #eee;
+            padding: 5px;
+            border-radius: 6px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .gesture-hint i {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 3px;
+            color: #333;
+        }
+
+        .gesture-hint span {
+            font-size: 9px;
+            color: #666;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .success-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+            transition: 0.4s ease;
+        }
+
+        .success-view.show {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #4bb71b;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .success-text {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #4bb71b;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: 0.3s delay 0.8s;
+        }
+
+        .success-view.show .success-text {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #hiddenPlayer {
+            display: none;
+        }
+
+        .btn-default.playing,
+        .btn-default:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-default {
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="preloader">
+        <div class="loading-container">
+            <div class="loading"></div>
+            <div id="loading-icon"><img src="images/loader.svg" alt=""></div>
+        </div>
+    </div>
+
+    <header class="main-header">
+        <div class="header-sticky">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <a class="navbar-brand" href="index.html">
+                        <img src="images/logo1.png" alt="Logo" style="width: 190px; height: auto;">
+                    </a>
+                    <div class="collapse navbar-collapse main-menu">
+                        <div class="nav-menu-wrapper">
+                            <ul class="navbar-nav mr-auto" id="menu">
+                                <li class="nav-item"><a class="nav-link" href="home.html">Home</a>
+                                <li class="nav-item"><a class="nav-link" href="about.html">About Us</a>
+                                <li class="nav-item"><a class="nav-link" href="catergories-voice.html">Library</a></li>
+                                <li class="nav-item"><a class="nav-link" href="books-voice.html">Books</a></li>
+                                <li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
+                            </ul>
+                        </div>
+                        <div class="header-contact-btn">
+                            <a href="tel:761853398"
+                                class="header-contact-now"><i class="fa-solid fa-phone-volume"></i>70 556 6003</a>
+                            <a href="log-1.html" class="btn-default">Get Started</a>
+                        </div>
+                    </div>
+                    <div class="navbar-toggle"></div>
+                </div>
+            </nav>
+            <div class="responsive-menu"></div>
+        </div>
+    </header>
+
+    <div class="page-header parallaxie">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-12">
+                    <div class="page-header-box">
+                        <h1 class="text-anime-style-2" data-cursor="-opaque">Forget Me not <span></span></h1>
+                        <nav class="wow fadeInUp">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="index.html">home</a></li>
+                                <li class="breadcrumb-item"><a href="catergories.html">library</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Forget Me not</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-service-single">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="page-single-sidebar">
+                        <div class="sidebar-cta-box wow fadeInUp" data-wow-delay="0.25s">
+                            <div class="sidebar-cta-image">
+                                <figure class="image-anime">
+                                    <img src="images/ws/3b.jpg" alt="Forget Me Not - Book Cover">
+                                </figure>
+                            </div>
+                            <div class="sidebar-cta-content">
+                                <h3>මල් කිණිත්තක පුරාවෘත්තය<br>(Forget Me Not)</h3>
+                                <div style="display: flex; gap: 10px;">
+                                    <button id="playAudioBtn" class="btn-default" onclick="playYouTubeAudio('1-AP_JTAvYc')">Listen Book</button>
+                                    <button id="stopAudioBtn" class="btn-default" onclick="stopYouTubeAudio()" style="display: none;">Stop Audio</button>
+                                    <a href="https://www.honwix.com/book/15a353a25e9/read" id="readBookBtn"
+                                        class="btn-default">Read Book</a>
+                                </div>
+                                <div id="hiddenPlayer"></div>
+                            </div>
+                        </div>
+                        <div class="page-catagery-list wow fadeInUp" style="margin-top: 20px;">
+                            <h3>Book Sections</h3>
+                            <ul>
+                                <li><a href="#">Synopsis</a></li>
+                                <li><a href="#">Character Insights</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="service-single-content">
+                        <div class="service-featured-image">
+                            <figure class="image-anime reveal">
+                                <img src="images/ws/2b.jpg" alt="Forget Me Not Book Cover">
+                            </figure>
+                        </div>
+                        <div class="service-entry">
+                            <p class="wow fadeInUp"><strong>මල් කිණිත්තක පුරාවෘත්තය (Forget Me Not)</strong> is a
+                                compelling Sinhala literary piece.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-main">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="footer-header">
+                        <div class="footer-about">
+                            <div class="footer-logo">
+                                <img src="images/logo1.png" alt="Footer Logo">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/validator.min.js"></script>
+    <script src="js/jquery.slicknav.js"></script>
+    <script src="js/swiper-bundle.min.js"></script>
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/jquery.counterup.min.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/SmoothScroll.js"></script>
+    <script src="js/parallaxie.js"></script>
+    <script src="js/gsap.min.js"></script>
+    <script src="js/magiccursor.js"></script>
+    <script src="js/SplitText.js"></script>
+    <script src="js/ScrollTrigger.min.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/function.js"></script>
+
+    <div class="start-overlay" id="blindStartOverlay">
+        <div
+            style="border: 3px solid #00f260; padding: 30px; border-radius: 50%; margin-bottom: 20px; animation: pulse 2s infinite;">
+            <i class="fa-solid fa-headphones" style="font-size: 50px; color: #00f260;"></i>
+        </div>
+        <h1>Tap to Start Listening</h1>
+        <p style="color: #888; margin-top: 10px;">Voice Assistant Ready</p>
+    </div>
+
+    <video id="aiVideoSource" playsinline></video>
+
+    <div class="agent-widget" id="agentWidget">
+        <div class="visual-area">
+            <div class="robot-avatar" id="robotIcon"><i class="fa-solid fa-robot"></i></div>
+            <canvas id="gestureCanvas"></canvas>
+        </div>
+        <div class="info-area">
+            <span class="status-badge" id="statusBadge">SYSTEM IDLE</span>
+            <h5 id="agentTitle">Reading Assistant</h5>
+            <p id="agentText">Waiting for user...</p>
+        </div>
+    </div>
+
+    <div id="nextBookPopup">
+        <div class="popup-content-wrapper">
+            <div class="next-book-details">
+                <div class="book-thumb">
+                    <div class="soon-badge">Soon</div>
+                    <img src="images/ws/3b.jpg" alt="Next Book">
+                </div>
+                <div class="book-info">
+                    <h4>Madol Doova</h4>
+                    <p>Martin Wickramasinghe</p>
+                </div>
+            </div>
+            <p class="popup-desc" id="popupDescText">Similar book available.</p>
+            <div class="gesture-hint-row" id="popupHints">
+            </div>
+        </div>
+        <div class="success-view" id="successView">
+            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="60" height="60">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                <path class="checkmark-check" fill="none" stroke="#4bb71b" stroke-width="4"
+                    d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+            </svg>
+            <div class="success-text">Admin Notified!</div>
+        </div>
+    </div>
+
+    <script>
+        // --- YOUTUBE API SETUP ---
+        var player;
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() { /* Ready */ }
+
+        function playYouTubeAudio(videoId) {
+            if (!player) {
+                player = new YT.Player('hiddenPlayer', {
+                    height: '0', width: '0', videoId: videoId,
+                    playerVars: { 'autoplay': 1, 'controls': 0, 'showinfo': 0, 'modestbranding': 1 },
+                    events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+                });
+            } else {
+                player.loadVideoById(videoId);
+                player.playVideo();
+            }
+            updateButtonState(true);
+        }
+
+        function onPlayerReady(event) { event.target.playVideo(); updateButtonState(true); }
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED) {
+                updateButtonState(false);
+            } else if (event.data === YT.PlayerState.PLAYING) {
+                updateButtonState(true);
+            }
+        }
+        function stopYouTubeAudio() { if (player) player.stopVideo(); updateButtonState(false); }
+        function updateButtonState(isPlayingNow) {
+            const playBtn = document.getElementById('playAudioBtn');
+            const stopBtn = document.getElementById('stopAudioBtn');
+            const readBtn = document.getElementById('readBookBtn');
+            if (isPlayingNow) {
+                playBtn.innerHTML = "Listening..."; playBtn.classList.add('playing');
+                stopBtn.style.display = "inline-block"; readBtn.style.display = "none";
+            } else {
+                playBtn.innerHTML = "Listen Book"; playBtn.classList.remove('playing');
+                stopBtn.style.display = "none"; readBtn.style.display = "inline-block";
+            }
+        }
+
+        // --- AI LOGIC ---
+        $(document).ready(function() {
+            const overlay = $('#blindStartOverlay');
+            const widget = $('#agentWidget');
+            const videoElement = document.getElementById('aiVideoSource');
+            const canvasElement = document.getElementById('gestureCanvas');
+            const canvasCtx = canvasElement.getContext('2d');
+            const robotIcon = $('#robotIcon');
+            
+            // --- STATE MACHINE ---
+            let state = "WAITING_TOUCH"; 
+            let lastSpokenTime = 0;
+            let currentGesture = null;       
+            let gestureStartTime = 0;        
+            const REQUIRED_HOLD_TIME = 1500;
+            
+            let popupTriggerTimer = null; 
+            let popupAutoCloseTimer = null;
+            let promoShownForThisPause = false; // Flag to track if promo showed
+
+            overlay.click(function() {
+                overlay.fadeOut(); widget.css("display", "flex");
+                initAI();
+            });
+
+            function initAI() {
+                updateUI("Initializing", "Loading Assistant...", "LOADING");
+                speak("Welcome. Show 2 fingers for Intro. Show 5 fingers to Play. Show Fist to Go Back.", () => {
+                    startCamera();
+                });
+            }
+
+            function startCamera() {
+                const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+                hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5 });
+                hands.onResults(onResults);
+                const camera = new Camera(videoElement, {
+                    onFrame: async () => { await hands.send({image: videoElement}); },
+                    width: 640, height: 480
+                });
+                camera.start();
+                setTimeout(() => {
+                    state = "INITIAL_CHOICE";
+                    updateUI("Start?", "2:Intro | 5:Play | ✊:Back", "READY");
+                }, 1000);
+            }
+
+            function onResults(results) {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                canvasCtx.save();
+                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    robotIcon.hide(); $(canvasElement).show();
+                    const lm = results.multiHandLandmarks[0];
+                    drawConnectors(canvasCtx, lm, HAND_CONNECTIONS, {color: '#00f260', lineWidth: 3});
+                    drawLandmarks(canvasCtx, lm, {color: '#ff0000', lineWidth: 1});
+                    checkGestures(lm);
+                } else {
+                    $(canvasElement).hide(); robotIcon.show();
+                    currentGesture = null; gestureStartTime = 0;
+                }
+                canvasCtx.restore();
+            }
+
+            function checkGestures(lm) {
+                const indexUp = lm[8].y < lm[6].y;
+                const middleUp = lm[12].y < lm[10].y;
+                const ringUp = lm[16].y < lm[14].y;
+                const pinkyUp = lm[20].y < lm[18].y;
+                let fingersUpCount = 0;
+                if (indexUp) fingersUpCount++; if (middleUp) fingersUpCount++;
+                if (ringUp) fingersUpCount++; if (pinkyUp) fingersUpCount++;
+
+                const isFist = (fingersUpCount === 0);
+                const isTwoFingers = indexUp && middleUp && !ringUp && !pinkyUp;
+                const isOpenHand = fingersUpCount >= 4;
+
+                let detectedNow = null;
+
+                if (state === "INITIAL_CHOICE") {
+                    if (isTwoFingers) detectedNow = "TWO_FINGERS";
+                    else if (isOpenHand) detectedNow = "FIVE_FINGERS";
+                    else if (isFist) detectedNow = "FIST";
+                } 
+                else if (state === "POST_INTRO_CHOICE") {
+                    if (isOpenHand) detectedNow = "FIVE_FINGERS";
+                    else if (isFist) detectedNow = "FIST";
+                }
+                else if (state === "PLAYING") {
+                    if (isFist) detectedNow = "FIST";
+                }
+                else if (state === "PAUSED_DECISION") {
+                    if (isOpenHand) detectedNow = "FIVE_FINGERS";
+                }
+                else if (state === "PROMO_OFFER") { 
+                    if (isTwoFingers) detectedNow = "TWO_FINGERS"; 
+                }
+                else if (state === "PROMO_DETAILS") { 
+                    if (isFist) detectedNow = "FIST"; 
+                    else if (isOpenHand) detectedNow = "FIVE_FINGERS"; 
+                }
+
+                const now = new Date().getTime();
+                if (detectedNow !== null) {
+                    if (currentGesture === detectedNow) {
+                        const holdDuration = now - gestureStartTime;
+                        if (holdDuration > 500 && holdDuration < REQUIRED_HOLD_TIME) {
+                            $('#statusBadge').text("HOLDING... " + detectedNow).css('background', '#00bcd4'); 
+                        }
+                        if (holdDuration > REQUIRED_HOLD_TIME) {
+                            if (now - lastSpokenTime > 2000) { 
+                                executeAction(detectedNow);
+                                currentGesture = null; gestureStartTime = 0; 
+                            }
+                        }
+                    } else { currentGesture = detectedNow; gestureStartTime = now; }
+                } else {
+                    currentGesture = null; gestureStartTime = 0;
+                    if (state !== "WAITING_TOUCH" && state !== "LOADING") {
+                        if (state.includes("PROMO")) $('#statusBadge').text("DECIDING...");
+                        else $('#statusBadge').text("READY");
+                        $('#statusBadge').css('background', '#333');
+                    }
+                }
+            }
+
+            function executeAction(gesture) {
+                const now = new Date().getTime();
+
+                if (state === "INITIAL_CHOICE") {
+                    if (gesture === "TWO_FINGERS") {
+                        state = "READING_INTRO"; lastSpokenTime = now;
+                        updateUI("Intro", "Reading...", "SPEAKING");
+                        speak("Forget Me Not is a Sinhala literary piece about memory.", () => {
+                            state = "POST_INTRO_CHOICE";
+                            updateUI("Action?", "5:Play | ✊:Back", "READY");
+                            speak("Intro done. Show 5 fingers to Play. Show Fist to Go Back.");
+                        });
+                    } 
+                    else if (gesture === "FIVE_FINGERS") triggerPlayBook();
+                    else if (gesture === "FIST") goBackToLibrary();
+                }
+
+                else if (state === "POST_INTRO_CHOICE") {
+                    if (gesture === "FIVE_FINGERS") triggerPlayBook();
+                    else if (gesture === "FIST") goBackToLibrary();
+                }
+
+                else if (state === "PLAYING") {
+                    if (gesture === "FIST") triggerPause();
+                }
+
+                else if (state === "PAUSED_DECISION") {
+                    if (gesture === "FIVE_FINGERS") {
+                        // LOGIC UPDATE: If Promo hasn't shown yet, SHOW IT NOW
+                        if (!promoShownForThisPause) {
+                            triggerPromoPopup();
+                        } else {
+                            // Already shown, just resume
+                            triggerPlayBook();
+                        }
+                    }
+                }
+
+                else if (state === "PROMO_OFFER") {
+                    if (gesture === "TWO_FINGERS") showPromoDetails();
+                }
+
+                else if (state === "PROMO_DETAILS") {
+                    if (gesture === "FIST") notifyAdmin();
+                    else if (gesture === "FIVE_FINGERS") closePromoAndStayPaused();
+                }
+            }
+
+            // --- FUNCTIONS ---
+
+            function triggerPlayBook() {
+                state = "PLAYING"; lastSpokenTime = new Date().getTime();
+                if (popupTriggerTimer) clearTimeout(popupTriggerTimer);
+                updateUI("Playing", "Show ✊ Fist to Pause", "PLAYING");
+                speak("Playing audiobook.", () => {
+                    playYouTubeAudio('1-AP_JTAvYc');
+                });
+            }
+
+            function triggerPause() {
+                state = "PAUSED_DECISION"; lastSpokenTime = new Date().getTime();
+                stopYouTubeAudio();
+                
+                // RESET PROMO FLAG
+                promoShownForThisPause = false;
+
+                updateUI("Paused", "5 Fingers: Resume", "WAITING");
+                speak("Paused. Show 5 fingers to Resume.", () => {
+                    if (popupTriggerTimer) clearTimeout(popupTriggerTimer);
+                    popupTriggerTimer = setTimeout(() => {
+                        triggerPromoPopup(); // Auto trigger after 20s
+                    }, 20000);
+                });
+            }
+
+            function triggerPromoPopup() {
+                if (popupTriggerTimer) clearTimeout(popupTriggerTimer);
+                
+                // MARK PROMO AS SHOWN
+                promoShownForThisPause = true;
+
+                state = "PROMO_OFFER";
+                $('#nextBookPopup').addClass('active');
+                
+                $('#popupDescText').text("We found a similar book. Want to know?");
+                $('#popupHints').html(`
+                    <div class="gesture-hint"><i class="fa-regular fa-hand-peace"></i><span>2 Fingers<br>Yes</span></div>
+                `);
+
+                speak("Before you go, we found a similar book. Want to know? Show 2 fingers.", () => {
+                    if (popupAutoCloseTimer) clearTimeout(popupAutoCloseTimer);
+                    popupAutoCloseTimer = setTimeout(() => {
+                        closePromoAndStayPaused();
+                    }, 10000);
+                });
+            }
+
+            function showPromoDetails() {
+                if (popupAutoCloseTimer) clearTimeout(popupAutoCloseTimer);
+                state = "PROMO_DETAILS";
+                $('#popupDescText').text("Madol Doova. Notify Admin?");
+                $('#popupHints').html(`
+                    <div class="gesture-hint"><i class="fa-solid fa-hand-fist"></i><span>Fist<br>Notify</span></div>
+                    <div class="gesture-hint"><i class="fa-solid fa-hand-paper"></i><span>5 Fingers<br>No</span></div>
+                `);
+
+                speak("This is Madol Doova. Want to notify admin? Show Fist. Or show 5 fingers to close.", () => {});
+            }
+
+            function notifyAdmin() {
+            // දෘශ්‍යමාන Success Message එක
+            $('#successView').addClass('show');
+            
+            // Voice Message එක
+            speak("Okay, Admin notified.", () => {
+            
+            // --- Backend එකට Data යැවීමේ කොටස ---
+            let formData = new FormData();
+            formData.append('book', 'Madol Doova'); // යවන පොතේ නම
+            
+            // notify.php එකට Request එක යවන්න
+            fetch("notify.php", {
+            method: "POST",
+            body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+            console.log("Server Response:", data);
+            })
+            .catch(error => {
+            console.error("Error sending mail:", error);
+            });
+            // --------------------------------------
+            
+            // තත්පර 2කින් පසු Popup එක වහන්න
+            setTimeout(() => {
+            closePromoAndStayPaused();
+            }, 2000);
+            });
+            }
+
+            function closePromoAndStayPaused() {
+                $('#nextBookPopup').removeClass('active');
+                setTimeout(() => { $('#successView').removeClass('show'); }, 500);
+                
+                state = "PAUSED_DECISION";
+                updateUI("Paused", "5 Fingers: Resume", "WAITING");
+            }
+
+            function goBackToLibrary() {
+                state = "REDIRECTING"; lastSpokenTime = new Date().getTime();
+                updateUI("Going Back", "To Books Page...", "REDIRECT");
+                speak("Returning to library.", () => {
+                    window.location.href = "books-voice.html";
+                });
+            }
+
+            function updateUI(title, text, badge) {
+                $('#agentTitle').text(title);
+                $('#agentText').text(text);
+                $('#statusBadge').text(badge);
+                if (badge === "PLAYING" || badge === "SUCCESS") $('#statusBadge').css('background', '#00f260');
+                else if (badge === "READY" || badge === "SPEAKING") $('#statusBadge').css('background', '#ffc107');
+                else if (badge === "WAITING" || badge.includes("PROMO")) $('#statusBadge').css('background', '#ff4444');
+                else $('#statusBadge').css('background', '#333');
+            }
+
+            function speak(text, callback) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                robotIcon.addClass('speaking');
+                utterance.onend = function() {
+                    robotIcon.removeClass('speaking');
+                    if (callback) callback();
+                };
+                window.speechSynthesis.speak(utterance);
+            }
+        });
+    </script>
+</body>
+
+</html>

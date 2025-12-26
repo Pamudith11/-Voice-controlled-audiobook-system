@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>Request a Book - VoiceAccess</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&amp;family=Sora:wght@100..800&amp;display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/slicknav.min.css" rel="stylesheet">
+    <link href="css/all.min.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <link rel="stylesheet" href="css/mousecursor.css">
+    <link href="css/custom.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* Popup Logic */
+        #sidePopup {
+            position: fixed; right: -400px; top: 100px; width: 320px;
+            background: #fff; padding: 20px; border-radius: 12px 0 0 12px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2); transition: 0.5s ease;
+            z-index: 99999; border-left: 5px solid #25D366;
+        }
+        #sidePopup h3 { margin: 0 0 10px; font-size: 18px; color: #333; font-weight: 600; }
+        #sidePopup p { font-size: 14px; color: #666; margin-bottom: 15px; }
+        .popup-buttons { display: flex; gap: 10px; }
+        .popup-buttons button { flex: 1; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        #yesBtn { background: #25D366; color: white; }
+        #noBtn { background: #e0e0e0; color: #333; }
+
+        /* Voice Assistant UI */
+        .start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 99999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; color: white; text-align: center;
+        }
+
+        .agent-widget {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 320px; height: 450px; 
+            background: rgba(25, 25, 25, 0.95);
+            border: 2px solid #444; border-radius: 25px;
+            display: none; flex-direction: column;
+            z-index: 9999; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+        }
+
+        .visual-area { flex: 1; background: #111; display: flex; justify-content: center; align-items: center; }
+        .robot-avatar { font-size: 80px; color: #555; transition: all 0.3s; }
+        .robot-avatar.speaking { animation: pulse-speak 1s infinite; color: #00f260; }
+        .robot-avatar.listening { animation: pulse-listen 1.5s infinite; color: #ffc107; }
+        
+        @keyframes pulse-speak { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes pulse-listen { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        #gestureCanvas { position: absolute; width: 100%; height: 100%; display: none; transform: scaleX(-1); }
+        
+        .info-area { height: 140px; padding: 15px; display: flex; flex-direction: column; justify-content: center; background: #1a1a1a; }
+        .info-area h5 { color: #fff; margin: 0 0 5px 0; }
+        .info-area p { color: #aaa; margin: 0; font-size: 13px; }
+        
+        .status-badge {
+            display: inline-block; font-size: 11px; font-weight: bold;
+            color: #000; background: #333; color: #fff; padding: 2px 8px;
+            border-radius: 4px; margin-bottom: 5px; width: fit-content;
+        }
+
+        #aiVideoSource { display: none; }
+    </style>
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class="header-sticky">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <a class="navbar-brand" href="index.html">
+                        <img src="images/logo1.png" alt="Logo" style="width: 190px; height: auto;">
+                    </a>
+                    <div class="collapse navbar-collapse main-menu">
+                        <div class="nav-menu-wrapper">
+                            <ul class="navbar-nav mr-auto" id="menu">
+                                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                                <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+                                <li class="nav-item"><a class="nav-link" href="catergories.html">Library</a></li>
+                                <li class="nav-item"><a class="nav-link" href="books.html">Books</a></li>
+                                <li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
+                                <li class="nav-item highlighted-menu"><a class="nav-link" href="book-appointment.html">Book Appointment</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-contact-us">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="contact-us-form">
+                        <div class="section-title text-center">
+                            <h2 class="text-anime-style-2">Request an <span>Audiobook</span></h2>
+                        </div>
+                        <div class="contact-form">
+                            <form id="bookRequestForm">
+                                <div class="row">
+                                    <div class="form-group col-md-6 mb-4"><input type="text" name="fname" class="form-control" id="fname" placeholder="First name"></div>
+                                    <div class="form-group col-md-6 mb-4"><input type="text" name="lname" class="form-control" id="lname" placeholder="Last name"></div>
+                                    <div class="form-group col-md-6 mb-4"><input type="email" name="email" class="form-control" id="email" placeholder="E-mail"></div>
+                                    <div class="form-group col-md-6 mb-4"><input type="text" name="phone" class="form-control" id="phone" placeholder="Phone"></div>
+                                    <div class="form-group col-md-12 mb-4"><input type="text" name="book_title" class="form-control" id="book_title" placeholder="Book Title"></div>
+                                    <div class="form-group col-md-12 mb-4"><input type="text" name="author" class="form-control" id="author" placeholder="Author"></div>
+                                    <div class="col-md-12"><button type="submit" class="btn-default" id="manualSubmitBtn">Submit</button></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidePopup">
+        <h3>Success!</h3>
+        <p>Request submitted. <br>Send via WhatsApp?</p>
+        <div class="popup-buttons">
+            <button id="yesBtn">Yes</button>
+            <button id="noBtn">No</button>
+        </div>
+    </div>
+
+    <div class="start-overlay" id="blindStartOverlay">
+        <div style="border: 3px solid #00f260; padding: 30px; border-radius: 50%; margin-bottom: 20px; animation: pulse 2s infinite;">
+            <i class="fa-solid fa-microphone-lines" style="font-size: 50px; color: #00f260;"></i>
+        </div>
+        <h1>Tap to Request a Book</h1>
+        <p style="color: #ccc; margin-top: 10px;">Voice Assistant Ready</p>
+    </div>
+
+    <video id="aiVideoSource" playsinline></video>
+
+    <div class="agent-widget" id="agentWidget">
+        <div class="visual-area">
+            <div class="robot-avatar" id="robotIcon"><i class="fa-solid fa-robot"></i></div>
+            <canvas id="gestureCanvas"></canvas>
+        </div>
+        <div class="info-area">
+            <span class="status-badge" id="statusBadge">SYSTEM IDLE</span>
+            <h5 id="agentTitle">Form Assistant</h5>
+            <p id="agentText">Waiting for user...</p>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/function.js"></script>
+
+    <script>
+        // ==================================================
+        // 1. MANUAL SUBMISSION (FIXED)
+        // ==================================================
+        document.getElementById("bookRequestForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const form = this;
+            const submitBtn = document.getElementById("manualSubmitBtn");
+            submitBtn.innerText = "Sending...";
+            submitBtn.disabled = true;
+
+            const formData = new FormData(form);
+
+            fetch('book_submit.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.innerText = "Submit";
+                submitBtn.disabled = false;
+                if(data.status === "success") {
+                    document.getElementById("sidePopup").style.right = "20px";
+                    form.reset();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => {
+                submitBtn.innerText = "Submit";
+                submitBtn.disabled = false;
+                alert("Connection Error!");
+            });
+        });
+
+        document.getElementById("yesBtn").addEventListener("click", function() {
+            window.open("https://wa.me/94703927300?text=I%20requested%20a%20book", '_blank');
+            document.getElementById("sidePopup").style.right = "-400px";
+        });
+        document.getElementById("noBtn").addEventListener("click", function() {
+            document.getElementById("sidePopup").style.right = "-400px";
+        });
+
+
+        // ==================================================
+        // 2. VOICE ASSISTANT LOGIC (FIXED RETRY)
+        // ==================================================
+        $(document).ready(function() {
+            const overlay = $('#blindStartOverlay');
+            const widget = $('#agentWidget');
+            const videoElement = document.getElementById('aiVideoSource');
+            const canvasElement = document.getElementById('gestureCanvas');
+            const canvasCtx = canvasElement.getContext('2d');
+            const robotIcon = $('#robotIcon');
+            
+            let voiceFormData = { name: "", book: "", author: "" };
+            let state = "WAITING_TOUCH"; 
+            let lastSpokenTime = 0;
+            
+            let currentGesture = null;
+            let gestureStartTime = 0;
+            const REQUIRED_HOLD_TIME = 1500; 
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            // --- START ---
+            overlay.click(function() {
+                overlay.fadeOut();
+                widget.css("display", "flex");
+                initAI();
+            });
+
+            function initAI() {
+                updateUI("Initializing", "Loading...", "LOADING");
+                speak("Welcome. I will help you fill the book request form.", () => {
+                    startCamera();
+                });
+            }
+
+            function startCamera() {
+                const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+                hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5 });
+                hands.onResults(onResults);
+
+                const camera = new Camera(videoElement, {
+                    onFrame: async () => { await hands.send({image: videoElement}); },
+                    width: 640, height: 480
+                });
+                camera.start();
+
+                setTimeout(() => {
+                    state = "WAIT_FOR_START";
+                    updateUI("Ready", "Show 5 Fingers to Start", "READY");
+                    speak("To start, please show your open hand with 5 fingers.");
+                }, 5000);
+            }
+
+            function onResults(results) {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                canvasCtx.save();
+                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    robotIcon.hide();
+                    $(canvasElement).show();
+                    const lm = results.multiHandLandmarks[0];
+                    drawConnectors(canvasCtx, lm, HAND_CONNECTIONS, {color: '#00f260', lineWidth: 3});
+                    drawLandmarks(canvasCtx, lm, {color: '#ff0000', lineWidth: 1});
+                    checkGestures(lm);
+                } else {
+                    $(canvasElement).hide();
+                    robotIcon.show();
+                    currentGesture = null;
+                }
+                canvasCtx.restore();
+            }
+
+            function checkGestures(lm) {
+                const indexUp = lm[8].y < lm[6].y;
+                const middleUp = lm[12].y < lm[10].y;
+                const ringUp = lm[16].y < lm[14].y;
+                const pinkyUp = lm[20].y < lm[18].y;
+                const thumbTipY = lm[4].y;
+                const thumbJointY = lm[3].y;
+                
+                // Strict Thumbs Down Logic
+                const isThumbDown = thumbTipY > thumbJointY; 
+
+                let fingersUpCount = 0;
+                if (indexUp) fingersUpCount++;
+                if (middleUp) fingersUpCount++;
+                if (ringUp) fingersUpCount++;
+                if (pinkyUp) fingersUpCount++;
+
+                // Definitions
+                const isOpenHand = fingersUpCount >= 4; 
+                const isThumbsDown = isThumbDown && (fingersUpCount <= 1);
+
+                let detectedNow = null;
+                if (isThumbsDown) detectedNow = "THUMBS_DOWN";
+                else if (isOpenHand) detectedNow = "OPEN_HAND";
+
+                const now = new Date().getTime();
+                if (now - lastSpokenTime < 2000) return; 
+
+                if (detectedNow !== null) {
+                    if (currentGesture === detectedNow) {
+                        const holdDuration = now - gestureStartTime;
+                        if (holdDuration > 500 && holdDuration < REQUIRED_HOLD_TIME) {
+                            $('#statusBadge').text("HOLDING... " + detectedNow);
+                            $('#statusBadge').css('background', '#00bcd4');
+                        }
+                        if (holdDuration > REQUIRED_HOLD_TIME) {
+                            executeGestureAction(detectedNow);
+                            currentGesture = null; 
+                            gestureStartTime = 0;
+                        }
+                    } else {
+                        currentGesture = detectedNow;
+                        gestureStartTime = now;
+                    }
+                } else {
+                    currentGesture = null;
+                    gestureStartTime = 0;
+                }
+            }
+
+            // --- 3. LOGIC FLOW (RETRY FIX) ---
+            function executeGestureAction(gesture) {
+                
+                if (state === "WAIT_FOR_START" && gesture === "OPEN_HAND") {
+                    askName();
+                }
+
+                else if (state === "CONFIRM_NAME") {
+                    if (gesture === "OPEN_HAND") { // YES
+                        let names = voiceFormData.name.split(" ");
+                        $('#fname').val(names[0]);
+                        $('#lname').val(names.slice(1).join(" "));
+                        let emailName = voiceFormData.name.replace(/\s+/g, '').toLowerCase();
+                        $('#email').val(emailName + "@gmail.com");
+                        askBook();
+                    } 
+                    else if (gesture === "THUMBS_DOWN") { // NO
+                        triggerRetry(askName); // Retry Name
+                    }
+                }
+
+                else if (state === "CONFIRM_BOOK") {
+                    if (gesture === "OPEN_HAND") { // YES
+                        $('#book_title').val(voiceFormData.book);
+                        askAuthor();
+                    } 
+                    else if (gesture === "THUMBS_DOWN") { // NO
+                        triggerRetry(askBook); // Retry Book
+                    }
+                }
+
+                else if (state === "CONFIRM_AUTHOR") {
+                    if (gesture === "OPEN_HAND") { // YES
+                        $('#author').val(voiceFormData.author);
+                        finalReview();
+                    } 
+                    else if (gesture === "THUMBS_DOWN") { // NO
+                        triggerRetry(askAuthor); // Retry Author
+                    }
+                }
+
+                else if (state === "FINAL_CHECK") {
+                    if (gesture === "OPEN_HAND") { // SUBMIT
+                        submitVoiceForm();
+                    } 
+                    else if (gesture === "THUMBS_DOWN") { // RESTART
+                        triggerRetry(askName); // Start Over
+                    }
+                }
+            }
+
+            // --- 4. FUNCTIONS ---
+
+            // New Helper to handle retries cleanly
+            function triggerRetry(retryFunction) {
+                state = "RETRYING"; // Lock state so no gestures trigger
+                updateUI("Retrying", "Please wait...", "LOADING");
+                speak("Sorry about that. Let's try again.", () => {
+                    retryFunction(); // Call the passed function (e.g., askName)
+                });
+            }
+
+            function askName() {
+                state = "ASK_NAME";
+                updateUI("Name?", "Listening...", "LISTENING");
+                speak("Please say your full name.", () => {
+                    startListening((text) => {
+                        voiceFormData.name = text;
+                        state = "CONFIRM_NAME";
+                        updateUI("Confirm", text + " - ✋ Yes / 👎 No", "WAITING");
+                        speak(`Did you say ${text}? Show 5 fingers for Yes, or Thumbs Down for No.`);
+                    });
+                });
+            }
+
+            function askBook() {
+                state = "ASK_BOOK";
+                updateUI("Book?", "Listening...", "LISTENING");
+                speak("What is the book name?", () => {
+                    startListening((text) => {
+                        voiceFormData.book = text;
+                        state = "CONFIRM_BOOK";
+                        updateUI("Confirm", text + " - ✋ Yes / 👎 No", "WAITING");
+                        speak(`Did you say the book is ${text}? Show 5 fingers for Yes, Thumbs Down for No.`);
+                    });
+                });
+            }
+
+            function askAuthor() {
+                state = "ASK_AUTHOR";
+                updateUI("Author?", "Listening...", "LISTENING");
+                speak("Who is the author?", () => {
+                    startListening((text) => {
+                        voiceFormData.author = text;
+                        state = "CONFIRM_AUTHOR";
+                        updateUI("Confirm", text + " - ✋ Yes / 👎 No", "WAITING");
+                        speak(`Did you say the author is ${text}? Show 5 fingers for Yes, Thumbs Down for No.`);
+                    });
+                });
+            }
+
+            function finalReview() {
+                state = "FINAL_CHECK";
+                updateUI("Submit?", "5 Fingers to Submit", "READY");
+                let email = voiceFormData.name.replace(/\s+/g, '').toLowerCase() + "@gmail.com";
+                const summary = `I have filled the form. Name is ${voiceFormData.name}. Book is ${voiceFormData.book}. Show 5 fingers to submit.`;
+                speak(summary);
+            }
+
+            function submitVoiceForm() {
+                state = "REDIRECTING";
+                updateUI("Sending...", "Please wait", "LOADING");
+                
+                speak("Submitting your request now.", () => {
+                    
+                    let data = new FormData();
+                    data.append('name', voiceFormData.name);
+                    data.append('book_title', voiceFormData.book);
+                    data.append('author', voiceFormData.author);
+                    let genEmail = voiceFormData.name.replace(/\s+/g, '').toLowerCase() + "@gmail.com";
+                    data.append('email', genEmail);
+
+                    fetch('book_submit.php', {
+                        method: 'POST',
+                        body: data
+                    })
+                    .then(res => res.json())
+                    .then(result => {
+                        if(result.status === "success") {
+                            updateUI("Success", "Redirecting...", "SUCCESS");
+                            speak("Request sent successfully! Redirecting to Home.", () => {
+                                window.location.href = "index.html";
+                            });
+                        } else {
+                            speak("There was a server error, but I will redirect you.");
+                            setTimeout(() => window.location.href = "index.html", 3000);
+                        }
+                    })
+                    .catch(err => {
+                        speak("Connection failed.");
+                    });
+                });
+            }
+
+            function startListening(onResultCallback) {
+                try {
+                    robotIcon.addClass('listening');
+                    recognition.start();
+                    recognition.onresult = function(event) {
+                        const text = event.results[0][0].transcript;
+                        robotIcon.removeClass('listening');
+                        onResultCallback(text);
+                    };
+                    recognition.onerror = function(event) {
+                        robotIcon.removeClass('listening');
+                        speak("I didn't hear that. Please say it again.", () => {
+                            recognition.start(); 
+                        });
+                    };
+                } catch(e) { speak("Microphone error."); }
+            }
+
+            function updateUI(title, text, badge) {
+                $('#agentTitle').text(title);
+                $('#agentText').text(text);
+                $('#statusBadge').text(badge);
+                if (badge === "SUCCESS") $('#statusBadge').css('background', '#00f260');
+                else if (badge === "LISTENING") $('#statusBadge').css('background', '#00bcd4');
+                else $('#statusBadge').css('background', '#333');
+            }
+
+            function speak(text, callback) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                lastSpokenTime = new Date().getTime() + (text.length * 60);
+                robotIcon.addClass('speaking');
+                utterance.onend = function() {
+                    robotIcon.removeClass('speaking');
+                    if (callback) callback();
+                };
+                window.speechSynthesis.speak(utterance);
+            }
+        });
+    </script>
+</body>
+</html>

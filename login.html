@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>Login</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&amp;family=Sora:wght@100..800&amp;display=swap"
+        rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/slicknav.min.css" rel="stylesheet">
+    <link href="css/all.min.css" rel="stylesheet" media="screen">
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet" media="screen">
+</head>
+
+<body>
+
+    <svg style="display: none">
+        <filter id="protanopia">
+            <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0" />
+        </filter>
+        <filter id="deuteranopia">
+            <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0" />
+        </filter>
+    </svg>
+
+    <div class="page-contact-us">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="contact-us-content">
+                        <div class="section-title">
+                            <h3 class="wow fadeInUp">login</h3>
+                            <h2 class="text-anime-style-2">Access your <span>account</span></h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.2s">Welcome back! Please log in to access your
+                                dashboard.</p>
+
+                        </div>
+
+                        <div class="contact-info-list">
+                            <div class="contact-info-item wow fadeInUp">
+                                <div class="icon-box"><img src="images/icon-phone.svg" alt=""></div>
+                                <div class="contact-item-content">
+                                    <h3>need help?</h3>
+                                    <p><a href="tel:+94705566003">+94 70 556 6003</a></p>
+                                </div>
+                            </div>
+
+                            <div class="contact-info-item wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="icon-box"><img src="images/icon-mail.svg" alt=""></div>
+                                <div class="contact-item-content">
+                                    <h3>support email</h3>
+                                    <p style="font-size: 90%;"><a href="mailto:support@vacc.com">support@vacc.com</a>
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="mt-3">If you don't have an account, please register first to enjoy full access to
+                                our audio library.</p>
+                            <p class="mt-2">If you didn't register yet, <a
+                                    href="colour-blind-test.html"><strong style="color: #333; text-decoration: underline;">Register here</strong></a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="contact-us-form">
+                        <div class="section-title">
+                            <h2 class="text-anime-style-2">Login to <span>your account</span></h2>
+                        </div>
+
+                        <div class="contact-form">
+                            <form id="loginForm" onsubmit="return handleLogin(event)">
+                                <div class="row">
+                                    <div class="form-group col-md-12 mb-4">
+                                        <input type="text" id="fullname" class="form-control" placeholder="Full Name (Username)" required>
+                                    </div>
+
+                                    <div class="form-group col-md-12 mb-5">
+                                        <input type="password" id="password" class="form-control" placeholder="Password" required>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn-default">Login</button>
+                                        <div id="msgSubmit" class="h10 text-danger mt-3" style="display:none;"></div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.slicknav.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/function.js"></script>
+
+    <script>
+        function handleLogin(event) {
+                event.preventDefault();
+        
+                const fullname = document.getElementById("fullname").value.trim();
+                const password = document.getElementById("password").value;
+                const msg = document.getElementById("msgSubmit");
+                const btn = document.querySelector("button[type='submit']");
+    
+                // UI Feedback
+                msg.style.display = 'none';
+                btn.innerText = "Checking...";
+    
+                const formData = new FormData();
+                formData.append('fullname', fullname);
+                formData.append('password', password);
+    
+                fetch('api.php?action=login', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === "success") {
+                        btn.innerText = "Success!";
+                        btn.style.background = "#333"; 
+                        btn.style.color = "#fff";
+    
+                        // 1. Save User Name
+                        localStorage.setItem('userName', data.fullname);
+                        
+                        // 2. SAVE VISION TYPE CORRECTLY (Matching Index Page)
+                        // The DB returns 'deuteranopia' for user 'sadu'
+                        if (data.vision_type) {
+                            localStorage.setItem('visionType', data.vision_type); 
+                        } else {
+                            localStorage.setItem('visionType', 'normal');
+                        }
+    
+                        // 3. Redirect
+                        setTimeout(() => {
+                            window.location.href = "index.html"; // index
+                        }, 1000);
+                    } else {
+                        btn.innerText = "Login";
+                        msg.innerText = data.message;
+                        msg.style.display = "block";
+                        msg.style.color = "red";
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    btn.innerText = "Login";
+                    msg.innerText = "System Error. Check API.";
+                    msg.style.display = "block";
+                    msg.style.color = "red";
+                });
+            }
+    </script>
+</body>
+
+</html>
